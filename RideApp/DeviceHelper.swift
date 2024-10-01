@@ -1,10 +1,9 @@
 //
-//  IOSDevice.swift
+//  DeviceHelper.swift
 //  RideApp
 //
 //  Created by Jacob Rangel on 10/1/24.
 //
-
 
 //  Size Classes Source: https://developer.apple.com/design/human-interface-guidelines/layout#iOS-iPadOS-device-size-classes
 

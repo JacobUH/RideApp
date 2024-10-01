@@ -8,14 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    init() {
+        // Set the UITabBar background color
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = UIColor(Color(hex: "101011")) // Custom tab bar background color
+        
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+    }
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            TabView{
+                HomeView()
+                RidesView()
+                RentalsView()
+                AccountView()
+            }
         }
-        .padding()
     }
 }
 

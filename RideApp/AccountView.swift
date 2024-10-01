@@ -8,8 +8,32 @@
 import SwiftUI
 
 struct AccountView: View {
+    @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
+    @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
+        
+        NavigationView(content: {
+            ZStack {
+                Color(hex: "1C1C1E")
+                    .edgesIgnoringSafeArea(.all)
+                VStack {
+                    if orientation.isPortrait(device: .iPhone) {}
+                    else if orientation.isLandscape(device: .iPhone){}
+                    else {}
+                }
+                
+            }
+           
+        })
+        .navigationViewStyle(StackNavigationViewStyle())
+        .tabItem {
+            Image(systemName: "person.crop.circle.fill")
+            Text("Account")
+        }
+        
+        
     }
 }
 
