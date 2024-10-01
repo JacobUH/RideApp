@@ -1,4 +1,4 @@
-# Ride: Drive Your Future
+# Ride
 ### Created By: Jacob Rangel and Sage Turner
 [![Ride Official](https://raw.githubusercontent.com/JacobUH/RideApp/refs/heads/main/Screenshots/RideLogo.png)](http://3.18.22.13:5173/)
 
