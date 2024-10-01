@@ -1,6 +1,6 @@
 # Ride: Drive Your Future
 ### Created By: Jacob Rangel and Sage Turner
-[![Ride Official](https://github.com/JacobUH/RideApp/blob/main/Screenshots/RideLogoFooter.png)](http://3.18.22.13:5173/)
+[![Ride Official](https://raw.githubusercontent.com/JacobUH/RideApp/refs/heads/main/Screenshots/RideLogo.png)](http://3.18.22.13:5173/)
 
 Welcome to the repository for Ride! Created at the University of Houston in the COSC 4355 Ubiquitous Computing class. This application project is a collaboration of my teammate and I in the class.
 
@@ -9,12 +9,7 @@ You can check out the Figma here used to design the interface of the web applica
 
 https://github.com/user-attachments/assets/a1f43918-c416-4dc1-8ab1-164fd0a54ad5
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/JacobUH/RideApp/refs/heads/main/Screenshots/Figma%20Design.png" alt="Figma Design" border="0" width="600" height="450" style="margin-right: 60px;">
-</p>
-
 ## Team Members
-
 - Jacob Rangel (GitHub: [JacobUH](https://github.com/JacobUH))
 - Sage Turner (GitHub: [SageCT](https://github.com/SageCT))
 
