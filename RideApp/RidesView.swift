@@ -19,7 +19,13 @@ struct RidesView: View {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
                 VStack {
-                    if orientation.isPortrait(device: .iPhone) {}
+                    if orientation.isPortrait(device: .iPhone) {
+                        Text("RIDE")
+                            .font(.system(size:24, weight: .black))
+                            .foregroundStyle(.white)
+                            .padding(.vertical, 4)
+                        Spacer()
+                    }
                     else if orientation.isLandscape(device: .iPhone){}
                     else {}
                 }
