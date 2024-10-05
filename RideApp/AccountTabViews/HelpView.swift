@@ -8,10 +8,47 @@
 
 import SwiftUI
 
+struct navRow: View {
+    var label: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Button(action: {
+                // your action here for the whole row
+            }) {
+                HStack {
+                    Text(label)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.leading, 15)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color(hex: "999999"))
+                        .padding(.trailing)
+                }
+                .contentShape(Rectangle()) // Ensures the entire HStack is tappable
+            }
+
+            Divider()
+                .background(Color.gray)
+        }
+    }
+
+}
+
 struct HelpView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.presentationMode) var presentationMode
+    
+    @State private var firstName = "Jacob"
+    @State private var lastName = "Rangel"
+    @State private var email = "jacobrangel0628@gmail.com"
+    @State private var phone = "(832) 123 4567"
+    @State private var gender = "Male"
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -46,6 +83,18 @@ struct HelpView: View {
                         .shadow(
                           color: Color(red: 0, green: 0, blue: 0, opacity: 0.25), radius: 10, y: 10
                         )
+                        
+                        VStack {
+                           
+                            VStack(spacing: 16) {
+                                navRow(label: "FAQs")
+                                navRow(label: "Contact Support")
+                                navRow(label: "App Guide")
+                                navRow(label: "Report An Issue")
+                            }
+                        }
+                        .padding(.top, 30)
+                        
                         Spacer()
                     }
                     else if orientation.isLandscape(device: .iPhone){}

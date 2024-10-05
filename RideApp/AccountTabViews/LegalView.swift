@@ -46,6 +46,21 @@ struct LegalView: View {
                         .shadow(
                           color: Color(red: 0, green: 0, blue: 0, opacity: 0.25), radius: 10, y: 10
                         )
+                        
+                        VStack {
+                           
+                            VStack(spacing: 16) {
+                                navRow(label: "Copyright")
+                                navRow(label: "Terms & Conditions")
+                                navRow(label: "Privacy Policy")
+                                navRow(label: "Location Information")
+                                navRow(label: "Learn More")
+                                
+                                
+                            }
+                        }
+                        .padding(.top, 30)
+                        
                         Spacer()
                     }
                     else if orientation.isLandscape(device: .iPhone){}

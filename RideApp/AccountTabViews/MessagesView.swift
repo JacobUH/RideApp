@@ -45,6 +45,14 @@ struct MessagesView: View {
                         .shadow(
                           color: Color(red: 0, green: 0, blue: 0, opacity: 0.25), radius: 10, y: 10
                         )
+                        
+                        // content
+                        VStack {
+                            ScrollView {
+                                
+                            }
+                        }
+                        
                         Spacer()
                     }
                     else if orientation.isLandscape(device: .iPhone){}

@@ -12,7 +12,7 @@ struct ContentView: View {
         // Set the UITabBar background color
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = UIColor(Color(hex: "101011")) // Custom tab bar background color
+        tabBarAppearance.backgroundColor = UIColor(Color(hex: "101011"))
         
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
