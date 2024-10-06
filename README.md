@@ -28,4 +28,4 @@ Coming Soon!
 Feel free to reach out to any of our emails below!
 
 - Jacob Rangel [jacobrangel0628@gmail.com](https://jacobrangel0628@gmail.com)
-- Sage Turner [~]()
+- Sage Turner [sageturn01@gmail.com](https://sageturn01@gmail.com)
