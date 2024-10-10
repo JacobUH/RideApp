@@ -20,10 +20,6 @@ struct HomeView: View {
                     .edgesIgnoringSafeArea(.all)
                 VStack {
                     if orientation.isPortrait(device: .iPhone) {
-                        Text("RIDE")
-                            .font(.system(size:24, weight: .black))
-                            .foregroundStyle(.white)
-
                         ZStack {
                             Image("homeBanner")
                                 .resizable()
@@ -183,10 +179,18 @@ struct HomeView: View {
                     else if orientation.isLandscape(device: .iPhone){}
                     else {}
                 }
-                
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("RIDE")
+                            .font(.system(size: 24, weight: .black))
+                            .foregroundStyle(Color(.white))
+                    }
+                }
+                .navigationBarTitleDisplayMode(.inline)
             }
            
         })
+        
         .navigationViewStyle(StackNavigationViewStyle())
         .tabItem {
             Image(systemName: "house.fill")
