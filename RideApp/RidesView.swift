@@ -1,10 +1,3 @@
-//
-//  RidesView.swift
-//  RideApp
-//
-//  Created by Jacob Rangel on 10/1/24.
-//
-
 import MapKit
 import SwiftUI
 
@@ -14,60 +7,83 @@ struct RidesView: View {
     @Environment(\.horizontalSizeClass) var widthSizeClass:
         UserInterfaceSizeClass?
 
-    @State private var fromAddress: String = ""
+    @State private var originAddress: String = ""
     @State private var destinationAddress: String = ""
-    @State private var driveTime: String =
-        "Next Stop?"
+    @State private var driveTime: String = "Next Stop?"
 
     var body: some View {
         let orientation = DeviceHelper(
             widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
 
-        NavigationView(content: {
+        NavigationView {
             ZStack {
                 Color(hex: "1C1C1E")
-                    .edgesIgnoringSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)  // Background color for the entire view
+
                 VStack {
                     if orientation.isPortrait(device: .iPhone) {
-                        Text("RIDE")
-                            .font(.system(size: 24, weight: .black))
-                            .foregroundStyle(.white)
-                            .padding(.vertical, 4)
-                        Spacer()
+                        VStack(spacing: 0) {
+                            // Title "RIDE"
+                            Text("RIDE")
+                                .font(.system(size: 24, weight: .black))
+                                .foregroundStyle(.white)
+                                .padding(.vertical, 4)
 
-                        VStack(alignment: .leading) {
-                            TextField(
-                                "", text: $fromAddress,
-                                prompt: Text(
-                                    "\(Image(systemName: "magnifyingglass")) Next Stop?"
+                            // Map and search bar overlay
+                            ZStack(alignment: .top) {
+                                // Map takes up all available space
+                                MapViewContainer()
+                                    .edgesIgnoringSafeArea(.bottom)  // Ensure map extends below
+                                    .frame(
+                                        maxWidth: .infinity,
+                                        maxHeight: .infinity
+                                    )
+                                    .padding(.vertical, 16)
+                                //                                    .cornerRadius(24)
+
+                                // Search bar overlay
+                                TextField(
+                                    "", text: $originAddress,
+                                    prompt: Text(
+                                        "\(Image(systemName: "magnifyingglass")) Next Stop?"
+                                    )
+                                    .foregroundColor(.white)
                                 )
+                                .padding(20)
+                                .background(Color(hex: "303033").opacity(0.8))  // Slightly transparent background
+                                .cornerRadius(24)
+                                .padding(.horizontal, 32)  // Horizontal padding for the search bar
+                                .padding(.top, 25)  // Space between the map top and search bar
                                 .foregroundColor(.white)
-                            )
-                            .padding(.vertical, 20)
-                            .background(Color(hex: "303033"))
-                            .cornerRadius(24)
-                            .padding(.horizontal, 16)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-                            .autocorrectionDisabled()
-                            Spacer()
+                                .multilineTextAlignment(.center)
+                                .autocorrectionDisabled()
+                            }
                         }
-
+                        .frame(maxHeight: .infinity)  // Ensure the VStack fills the entire screen
                     } else if orientation.isLandscape(device: .iPhone) {
+                        // Handle landscape orientation if needed
                     } else {
+                        // Handle other device types or orientations
                     }
-
                 }
-
             }
-        })
+        }
         .navigationViewStyle(StackNavigationViewStyle())
         .tabItem {
             Image(systemName: "mappin.and.ellipse")
             Text("Rides")
         }
+    }
+}
 
+// Custom MapView container
+struct MapViewContainer: UIViewRepresentable {
+    func makeUIView(context: Context) -> MKMapView {
+        MKMapView(frame: .zero)
+    }
+
+    func updateUIView(_ uiView: MKMapView, context: Context) {
+        // Update the map view if needed
     }
 }
 
