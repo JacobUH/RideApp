@@ -1,3 +1,4 @@
+import CoreLocation
 import MapKit
 import SwiftUI
 
@@ -7,9 +8,17 @@ struct RidesView: View {
     @Environment(\.horizontalSizeClass) var widthSizeClass:
         UserInterfaceSizeClass?
 
-    @State private var originAddress: String = ""
-    @State private var destinationAddress: String = ""
-    @State private var driveTime: String = "Next Stop?"
+    @State public var originAddress: String = ""
+    @State public var destinationAddress: String = ""
+    @State public var driveTime: String = "Next Stop?"
+
+    @State private var isDrawerVisible: Bool = false  // State to control the drawer visibility
+
+    @State private var region = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
+        span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)  // Zoom level
+    )
+     
 
     var body: some View {
         let orientation = DeviceHelper(
@@ -32,14 +41,11 @@ struct RidesView: View {
                             // Map and search bar overlay
                             ZStack(alignment: .top) {
                                 // Map takes up all available space
-                                MapViewContainer()
-                                    .edgesIgnoringSafeArea(.bottom)  // Ensure map extends below
-                                    .frame(
-                                        maxWidth: .infinity,
-                                        maxHeight: .infinity
-                                    )
+
+                                Map(coordinateRegion: $region)
+                                    .frame(maxWidth: .infinity, maxHeight: 700)
+                                    .edgesIgnoringSafeArea(.all)
                                     .padding(.vertical, 16)
-                                //                                    .cornerRadius(24)
 
                                 // Search bar overlay
                                 TextField(
@@ -66,6 +72,63 @@ struct RidesView: View {
                         // Handle other device types or orientations
                     }
                 }
+
+                // Drawer Popup at the bottom of the screen
+                VStack {
+                    Spacer()  // Push the drawer to the bottom
+                    if isDrawerVisible {
+                        VStack {
+                            // Drawer handle
+                            Capsule()
+                                .frame(width: 40, height: 6)
+                                .foregroundColor(.gray)
+                                .padding(.top, 8)
+
+                            // Drawer content
+                            VStack {
+                                HStack {
+                                    VStack {
+                                        Text("From")
+                                            .font(.headline)
+                                            .foregroundStyle(.white)
+                                            .padding()
+                                        Text("\(originAddress)")
+                                            .font(.headline).foregroundStyle(.white)
+                                    }
+                                    VStack {
+                                        Text("To")
+                                            .font(.headline)
+                                            .foregroundStyle(.white)
+                                            .padding()
+                                        Text("\(destinationAddress)")
+                                            .font(.headline).foregroundStyle(.white)
+                                    }
+                                }
+                            }
+
+                            // Close button
+                            Button(action: {
+                                withAnimation {
+                                    isDrawerVisible = false
+                                }
+                            }) {
+                                Text("Close Drawer")
+                                    .foregroundColor(.blue)
+                            }
+                            .padding(.bottom, 20)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Color(hex: "1C1C1E"))  // Updated background color
+                        .cornerRadius(20)
+                            .transition(.move(edge: .bottom))  // Slide in from the bottom
+                            .animation(.easeInOut, value: isDrawerVisible)
+                    }
+                }
+            }
+            .onTapGesture {
+                withAnimation {
+                    isDrawerVisible.toggle()  // Toggle drawer visibility when tapping the screen
+                }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -86,6 +149,7 @@ struct MapViewContainer: UIViewRepresentable {
         // Update the map view if needed
     }
 }
+
 
 #Preview {
     RidesView()
