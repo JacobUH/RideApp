@@ -6,7 +6,7 @@ struct MapView: View {
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Binding var selectedTab: Int
     
-    @State private var region = MKCoordinateRegion(
+    @State public var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 29.720, longitude: -95.344),
         span: MKCoordinateSpan(latitudeDelta: 5.0, longitudeDelta: 5.0)
     )
