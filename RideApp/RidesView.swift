@@ -21,7 +21,7 @@ struct RidesView: View {
     @State public var driveTime: String = "Next Stop?"
 
     @State private var isDrawerVisible: Bool = false
-    @State private var drawerOffset: CGFloat = 0  // Start with drawer hidden
+    @State private var drawerOffset: CGFloat = UIScreen.main.bounds.height * 0.95  // Start with the drawer closed with only the capsule visible
     @State private var drawerHeight: CGFloat = 0  // Will be set dynamically
 
     @State private var region = MKCoordinateRegion(
@@ -38,7 +38,7 @@ struct RidesView: View {
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
-                
+
                 VStack {
                     if orientation.isPortrait(device: .iPhone) {
                         VStack(spacing: 0) {
@@ -46,23 +46,27 @@ struct RidesView: View {
                                 .font(.system(size: 24, weight: .black))
                                 .foregroundStyle(.white)
                                 .padding(.vertical, 4)
-                            
+
                             ZStack(alignment: .top) {
                                 // Use RouteMapView for displaying the map with routes
                                 RouteMapView(region: $region, route: $route)
                                     .frame(maxWidth: .infinity, maxHeight: 700)
                                     .edgesIgnoringSafeArea(.all)
                                     .padding(.vertical, 16)
-                                
+
                                 VStack {
                                     TextField(
                                         "",
                                         text: $destinationAddress,
-                                        prompt: Text("\(Image(systemName: "magnifyingglass")) Where To?")
-                                            .foregroundStyle(.white)
+                                        prompt: Text(
+                                            "\(Image(systemName: "magnifyingglass")) Where To?"
+                                        )
+                                        .foregroundStyle(.white)
                                     )
                                     .padding(20)
-                                    .background(Color(hex: "303033").opacity(0.8))
+                                    .background(
+                                        Color(hex: "303033").opacity(0.8)
+                                    )
                                     .cornerRadius(24)
                                     .padding(.horizontal, 32)
                                     .padding(.top, 10)
@@ -80,7 +84,7 @@ struct RidesView: View {
                         .frame(maxHeight: .infinity)
                     }
                 }
-                
+
                 // Search Results List
                 if !searchResults.isEmpty {
                     List(searchResults) { result in
@@ -102,16 +106,16 @@ struct RidesView: View {
                     .cornerRadius(10)
                     .padding(.horizontal, 32)
                 }
-                
+
                 // Background overlay when drawer is visible
                 if isDrawerVisible {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .onTapGesture {
-                            hideDrawer()
+                            hideDrawer()  // Tap outside to hide drawer
                         }
                 }
-                
+
                 // Drawer Popup at the bottom of the screen
                 VStack {
                     Spacer()  // Push the drawer to the bottom
@@ -121,7 +125,7 @@ struct RidesView: View {
                             .frame(width: 40, height: 6)
                             .foregroundColor(.gray)
                             .padding(.top, 8)
-                        
+
                         // Drawer content
                         VStack {
                             HStack(spacing: 40) {
@@ -144,17 +148,17 @@ struct RidesView: View {
                                         .foregroundStyle(.white)
                                 }
                             }
-                            
+
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Nearby Rides")
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(.white)
-                                
+
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 10)
                             .padding(.leading)
-                            
+
                             ScrollView(.horizontal) {
                                 HStack(spacing: 15) {
                                     VStack {
@@ -213,21 +217,26 @@ struct RidesView: View {
                             .onChanged { value in
                                 // Handle both upward and downward dragging
                                 if value.translation.height > 0 {
-                                    // Dragging downward
-                                    self.drawerOffset = value.translation.height + UIScreen.main.bounds.height * 0.4
+                                    // Dragging downward from the new closed state
+                                    self.drawerOffset = value.translation.height + UIScreen.main.bounds.height * 0.95
                                 } else {
                                     // Dragging upward (allow reopen)
-                                    self.drawerOffset = max(0, UIScreen.main.bounds.height * 0.4 + value.translation.height)
+                                    self.drawerOffset = max(
+                                        0,
+                                        UIScreen.main.bounds.height * 0.3 + value.translation.height
+                                    )
                                 }
                             }
                             .onEnded { value in
                                 withAnimation(.easeInOut(duration: 0.5)) {
                                     if value.translation.height > 100 {
+                                        // Close the drawer to show only the capsule
                                         isDrawerVisible = false
-                                        drawerOffset = UIScreen.main.bounds.height * 0.4  // Close the drawer
+                                        drawerOffset = UIScreen.main.bounds.height * 0.95
                                     } else {
+                                        // Fully open the drawer
                                         isDrawerVisible = true
-                                        drawerOffset = 0  // Fully open the drawer
+                                        drawerOffset = 0
                                     }
                                 }
                             }
@@ -248,7 +257,7 @@ struct RidesView: View {
                 print("Origin Address: \(originAddress)")
                 print("Destination Address: \(destinationAddress)")
 
-                checkDrawerVisibility() // Ensure drawer is updated on load if addresses are set
+                checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
             }
             .onChange(of: originAddress) { _ in
                 checkDrawerVisibility()
@@ -278,7 +287,7 @@ struct RidesView: View {
         } else if !originAddress.isEmpty || !destinationAddress.isEmpty {
             // At least one address is filled, keep the drawer hidden but allow it to be reopened
             if !isDrawerVisible {
-                drawerOffset = drawerHeight * 0.8 // Allow partial visibility so it's draggable
+                drawerOffset = UIScreen.main.bounds.height * 0.95  // Drawer closer to the bottom
             }
         } else {
             hideDrawer()
@@ -288,7 +297,8 @@ struct RidesView: View {
     func hideDrawer() {
         withAnimation(.easeInOut(duration: 0.3)) {
             isDrawerVisible = false
-            drawerOffset = drawerHeight * 0.95 // Keep a small portion visible for dragging
+            // Drawer position so that only the capsule is visible
+            drawerOffset = UIScreen.main.bounds.height * 0.38
         }
     }
 
@@ -310,7 +320,7 @@ struct RidesView: View {
             let directions = MKDirections(request: request)
             directions.calculate { response, error in
                 if let route = response?.routes.first {
-                    self.route = route // Store the route to draw on the map
+                    self.route = route  // Store the route to draw on the map
                     driveTime = "\(Int(route.expectedTravelTime / 60)) min"
                     withAnimation(.easeInOut(duration: 0.5)) {
                         showDrawer()
