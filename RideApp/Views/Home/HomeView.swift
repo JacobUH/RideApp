@@ -169,8 +169,6 @@ struct HomeView: View {
                                     .padding(.vertical, 2)
                                 }
                             }
-                            
-                            
                         }
                         .padding(.horizontal)
                         
@@ -183,7 +181,7 @@ struct HomeView: View {
                     ToolbarItem(placement: .principal) {
                         Text("RIDE")
                             .font(.system(size: 24, weight: .black))
-                            .foregroundStyle(Color(.white))
+                            .foregroundStyle(.white)
                     }
                 }
                 .navigationBarTitleDisplayMode(.inline)
