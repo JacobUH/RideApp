@@ -2,44 +2,6 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    private let manager = CLLocationManager()
-    @Published var userLocation: CLLocationCoordinate2D?
-    @Published var address: String = ""
-
-    override init() {
-        super.init()
-        manager.delegate = self
-        manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
-    }
-
-    func locationManager(
-        _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]
-    ) {
-        if let location = locations.first {
-            userLocation = location.coordinate
-            reverseGeocode(location: location)
-        }
-    }
-
-    func reverseGeocode(location: CLLocation) {
-        let geocoder = CLGeocoder()
-        geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
-            if let placemark = placemarks?.first {
-                self.address = [
-                    placemark.name,
-                    placemark.locality,
-                    placemark.administrativeArea,
-                    placemark.country,
-                ]
-                .compactMap { $0 }
-                .joined(separator: ", ")
-            }
-        }
-    }
-}
-
 struct SearchResult: Identifiable {
     let id = UUID()
     let title: String
@@ -47,84 +9,78 @@ struct SearchResult: Identifiable {
 }
 
 struct RidesView: View {
-    @Environment(\.verticalSizeClass) var heightSizeClass:
-        UserInterfaceSizeClass?
-    @Environment(\.horizontalSizeClass) var widthSizeClass:
-        UserInterfaceSizeClass?
+    @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
+    @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
 
     @StateObject private var locationManager = LocationManager()
     @State private var searchCompleter = MKLocalSearchCompleter()
     @State private var searchResults = [SearchResult]()
 
-    @State public var originAddress: String = ""
     @State public var destinationAddress: String = ""
+    @State public var originAddress: String = ""
     @State public var driveTime: String = "Next Stop?"
 
-    @State private var isDrawerVisible: Bool = false  // State to control the drawer visibility
-    @State private var drawerOffset: CGFloat =
-        UIScreen.main.bounds.height * 0.4  // Initial offset for the drawer
+    @State private var isDrawerVisible: Bool = false
+    @State private var drawerOffset: CGFloat = 400  // Drawer partially open initially
+    @State private var maxDrawerHeight: CGFloat = 400  // Adjust according to content
+    @State private var minDrawerHeight: CGFloat = UIScreen.main.bounds.height * 0.7  // When fully open
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
-        span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)  // Zoom level
+        span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
     )
 
+    @State private var route: MKRoute? // To store the calculated route
+
     var body: some View {
-        let orientation = DeviceHelper(
-            widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
+        let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
 
         NavigationView {
             ZStack {
                 Color(hex: "1C1C1E")
-                    .edgesIgnoringSafeArea(.all)  // Background color for the entire view
+                    .edgesIgnoringSafeArea(.all)
 
                 VStack {
                     if orientation.isPortrait(device: .iPhone) {
                         VStack(spacing: 0) {
-                            // Title "RIDE"
                             Text("RIDE")
                                 .font(.system(size: 24, weight: .black))
                                 .foregroundStyle(.white)
                                 .padding(.vertical, 4)
 
-                            // Map and search bar overlay
                             ZStack(alignment: .top) {
-                                // Map takes up all available space
-                                Map(coordinateRegion: $region)
+                                // Use RouteMapView for displaying the map with routes
+                                RouteMapView(region: $region, route: $route)
                                     .frame(maxWidth: .infinity, maxHeight: 700)
                                     .edgesIgnoringSafeArea(.all)
                                     .padding(.vertical, 16)
 
                                 VStack {
-                                    // Destination TextField with auto-complete
                                     TextField(
                                         "", text: $destinationAddress,
-                                        prompt: Text(
-                                            "\(Image(systemName: "magnifyingglass")) Where To?"
-                                        ).foregroundStyle(.white)
+                                        prompt: Text("\(Image(systemName: "magnifyingglass")) Where To?")
+                                            .foregroundStyle(.white)
                                     )
                                     .padding(20)
-                                    .background(
-                                        Color(hex: "303033").opacity(0.8)
-                                    )  // Slightly transparent background
+                                    .background(Color(hex: "303033").opacity(0.8))
                                     .cornerRadius(24)
                                     .padding(.horizontal, 32)
                                     .padding(.top, 10)
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
                                     .autocorrectionDisabled()
-                                    .onChange(of: destinationAddress) {
-                                        newValue in
+                                    .onChange(of: destinationAddress) { newValue in
                                         searchCompleter.queryFragment = newValue
                                     }
-                                }.padding(.top, 15)
+                                }
+                                .padding(.top, 15)
                             }
                         }
                         .frame(maxHeight: .infinity)
                     }
                 }
 
-                // Auto-complete suggestions list
+                // Search Results List
                 if !searchResults.isEmpty {
                     List(searchResults) { result in
                         VStack(alignment: .leading) {
@@ -135,12 +91,9 @@ struct RidesView: View {
                                 .foregroundColor(.gray)
                         }
                         .onTapGesture {
-                            if originAddress.isEmpty {
-                                originAddress = result.title
-                            } else {
-                                destinationAddress = result.title
-                            }
+                            destinationAddress = result.title
                             searchResults.removeAll()
+                            calculateRouteToDestination()
                         }
                     }
                     .frame(height: 150)
@@ -149,7 +102,7 @@ struct RidesView: View {
                     .padding(.horizontal, 32)
                 }
 
-                // Overlay to detect taps outside the drawer
+                // Bottom Drawer with Ride Info
                 if isDrawerVisible {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
@@ -326,6 +279,7 @@ struct RidesView: View {
                     }
                 }
             }
+            
             .onChange(of: originAddress) { _ in
                 checkDrawerVisibility()
             }
@@ -343,8 +297,7 @@ struct RidesView: View {
             Text("Rides")
         }
     }
-
-    // Check if both originAddress and destinationAddress are filled
+    
     private func checkDrawerVisibility() {
         if !originAddress.isEmpty && !destinationAddress.isEmpty {
             withAnimation(.easeInOut(duration: 0.5)) {
@@ -355,6 +308,36 @@ struct RidesView: View {
             withAnimation(.easeInOut(duration: 0.5)) {
                 isDrawerVisible = false
                 drawerOffset = UIScreen.main.bounds.height * 0.4  // Close the drawer
+            }
+        }
+    }
+
+
+    // Function to calculate route to destination
+    func calculateRouteToDestination() {
+        guard let userLocation = locationManager.userLocation else { return }
+
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
+
+        // Geocode destination to get coordinates
+        let geocoder = CLGeocoder()
+        geocoder.geocodeAddressString(destinationAddress) { placemarks, error in
+            guard let placemark = placemarks?.first, let destinationLocation = placemark.location else { return }
+
+            request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destinationLocation.coordinate))
+            request.transportType = .automobile
+
+            let directions = MKDirections(request: request)
+            directions.calculate { response, error in
+                if let route = response?.routes.first {
+                    self.route = route // Store the route to draw on the map
+                    driveTime = "\(Int(route.expectedTravelTime / 60)) min"
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        isDrawerVisible = true
+                        drawerOffset = minDrawerHeight  // Fully open the drawer when route is calculated
+                    }
+                }
             }
         }
     }
