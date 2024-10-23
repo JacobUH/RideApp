@@ -38,7 +38,7 @@ struct RidesView: View {
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
-
+                
                 VStack {
                     if orientation.isPortrait(device: .iPhone) {
                         VStack(spacing: 0) {
@@ -46,14 +46,14 @@ struct RidesView: View {
                                 .font(.system(size: 24, weight: .black))
                                 .foregroundStyle(.white)
                                 .padding(.vertical, 4)
-
+                            
                             ZStack(alignment: .top) {
                                 // Use RouteMapView for displaying the map with routes
                                 RouteMapView(region: $region, route: $route)
                                     .frame(maxWidth: .infinity, maxHeight: 700)
                                     .edgesIgnoringSafeArea(.all)
                                     .padding(.vertical, 16)
-
+                                
                                 VStack {
                                     TextField(
                                         "",
@@ -80,7 +80,7 @@ struct RidesView: View {
                         .frame(maxHeight: .infinity)
                     }
                 }
-
+                
                 // Search Results List
                 if !searchResults.isEmpty {
                     List(searchResults) { result in
@@ -102,7 +102,7 @@ struct RidesView: View {
                     .cornerRadius(10)
                     .padding(.horizontal, 32)
                 }
-
+                
                 // Background overlay when drawer is visible
                 if isDrawerVisible {
                     Color.black.opacity(0.4)
@@ -111,76 +111,129 @@ struct RidesView: View {
                             hideDrawer()
                         }
                 }
-
-                // Bottom Drawer with Ride Info
-                GeometryReader { geometry in
+                
+                // Drawer Popup at the bottom of the screen
+                VStack {
+                    Spacer()  // Push the drawer to the bottom
                     VStack {
-                        Spacer()
+                        // Drawer handle
+                        Capsule()
+                            .frame(width: 40, height: 6)
+                            .foregroundColor(.gray)
+                            .padding(.top, 8)
+                        
+                        // Drawer content
                         VStack {
-                            // Drawer handle
-                            Capsule()
-                                .frame(width: 40, height: 6)
-                                .foregroundColor(.gray)
-                                .padding(.top, 8)
-
-                            // Drawer content
-                            VStack {
-                                HStack(spacing: 40) {
-                                    VStack {
-                                        Text("From")
-                                            .font(.headline)
-                                            .foregroundStyle(.white)
-                                            .padding()
-                                        Text("\(originAddress.isEmpty ? "Not set" : originAddress)")
-                                            .font(.headline)
-                                            .foregroundStyle(.white)
-                                    }
-                                    VStack {
-                                        Text("To")
-                                            .font(.headline)
-                                            .foregroundStyle(.white)
-                                            .padding()
-                                        Text("\(destinationAddress.isEmpty ? "Not set" : destinationAddress)")
-                                            .font(.headline)
-                                            .foregroundStyle(.white)
-                                    }
+                            HStack(spacing: 40) {
+                                VStack {
+                                    Text("From")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                        .padding()
+                                    Text("\(originAddress)")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
                                 }
-
-                                Text("Estimated Time: \(driveTime)")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                    .padding(.top, 8)
+                                VStack {
+                                    Text("To")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                        .padding()
+                                    Text("\(destinationAddress)")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                }
                             }
-                            .padding(.bottom, geometry.safeAreaInsets.bottom) // Handle safe area
-                        }
-                        .background(Color(hex: "1C1C1E"))
-                        .cornerRadius(20)
-                        .offset(y: drawerOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    let newOffset = value.translation.height
-                                    if newOffset > 0 {
-                                        drawerOffset = newOffset
+                            
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Nearby Rides")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .foregroundColor(.white)
+                                
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 10)
+                            .padding(.leading)
+                            
+                            ScrollView(.horizontal) {
+                                HStack(spacing: 15) {
+                                    VStack {
+                                        Image("cortesV5000")
+                                        ZStack {
+                                            Text("Cortes V5000 Valor")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            Text("9:49PM • 8 min")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                        }
+                                        .padding(4)
+                                    }
+                                    VStack {
+                                        Image("archerECL")
+                                        ZStack {
+                                            Text("Archer Quartz EC-L")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            Text("9:53PM • 12 min")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                        }
+                                        .padding(.vertical, 2)
+                                    }
+                                    VStack {
+                                        Image("quadraSportR7")
+                                        ZStack {
+                                            Text("Quadra Sport R-7")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            Text("9:46PM • 5 min")
+                                                .font(Font.custom("SF Pro", size: 12))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                        }
+                                        .padding(.vertical, 2)
                                     }
                                 }
-                                .onEnded { value in
-                                    if value.translation.height > drawerHeight / 2 {
-                                        hideDrawer()
-                                    } else {
-                                        showDrawer()
-                                    }
-                                }
-                        )
-                        .onAppear {
-                            // Capture the drawer's height
-                            drawerHeight = geometry.size.height
-                            // Initially hide the drawer
-                            drawerOffset = drawerHeight
+                            }
+                            .padding(.horizontal)
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    
+                    .background(Color(hex: "1C1C1E"))
+                    .cornerRadius(20)
+                    .offset(y: drawerOffset)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                // Handle both upward and downward dragging
+                                if value.translation.height > 0 {
+                                    // Dragging downward
+                                    self.drawerOffset = value.translation.height + UIScreen.main.bounds.height * 0.4
+                                } else {
+                                    // Dragging upward (allow reopen)
+                                    self.drawerOffset = max(0, UIScreen.main.bounds.height * 0.4 + value.translation.height)
+                                }
+                            }
+                            .onEnded { value in
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    if value.translation.height > 100 {
+                                        isDrawerVisible = false
+                                        drawerOffset = UIScreen.main.bounds.height * 0.4  // Close the drawer
+                                    } else {
+                                        isDrawerVisible = true
+                                        drawerOffset = 0  // Fully open the drawer
+                                    }
+                                }
+                            }
+                    )
+                    .transition(.move(edge: .bottom))
+                    .animation(.easeInOut(duration: 0.5), value: isDrawerVisible)
                 }
             }
             .onAppear {
