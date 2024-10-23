@@ -16,21 +16,20 @@ struct RidesView: View {
     @State private var searchCompleter = MKLocalSearchCompleter()
     @State private var searchResults = [SearchResult]()
 
-    @State public var destinationAddress: String = ""
-    @State public var originAddress: String = ""
+    @State public var destinationAddress: String = "65 Park Ln"
+    @State public var originAddress: String = "13418 Misty Orchard Ln"
     @State public var driveTime: String = "Next Stop?"
 
     @State private var isDrawerVisible: Bool = false
-    @State private var drawerOffset: CGFloat = 400  // Drawer partially open initially
-    @State private var maxDrawerHeight: CGFloat = 400  // Adjust according to content
-    @State private var minDrawerHeight: CGFloat = UIScreen.main.bounds.height * 0.7  // When fully open
+    @State private var drawerOffset: CGFloat = 0  // Start with drawer hidden
+    @State private var drawerHeight: CGFloat = 0  // Will be set dynamically
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
         span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
     )
 
-    @State private var route: MKRoute? // To store the calculated route
+    @State private var route: MKRoute?  // To store the calculated route
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -57,7 +56,8 @@ struct RidesView: View {
 
                                 VStack {
                                     TextField(
-                                        "", text: $destinationAddress,
+                                        "",
+                                        text: $destinationAddress,
                                         prompt: Text("\(Image(systemName: "magnifyingglass")) Where To?")
                                             .foregroundStyle(.white)
                                     )
@@ -71,6 +71,7 @@ struct RidesView: View {
                                     .autocorrectionDisabled()
                                     .onChange(of: destinationAddress) { newValue in
                                         searchCompleter.queryFragment = newValue
+                                        checkDrawerVisibility()
                                     }
                                 }
                                 .padding(.top, 15)
@@ -102,23 +103,19 @@ struct RidesView: View {
                     .padding(.horizontal, 32)
                 }
 
-                // Bottom Drawer with Ride Info
+                // Background overlay when drawer is visible
                 if isDrawerVisible {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .onTapGesture {
-                            withAnimation(.easeInOut(duration: 0.5)) {
-                                isDrawerVisible = false
-                                drawerOffset = UIScreen.main.bounds.height * 0.4  // Reset to initial offset
-                            }
+                            hideDrawer()
                         }
                 }
 
-                // Only show the drawer if both origin and destination are filled
-                if !originAddress.isEmpty && !destinationAddress.isEmpty {
-                    // Drawer Popup at the bottom of the screen
+                // Bottom Drawer with Ride Info
+                GeometryReader { geometry in
                     VStack {
-                        Spacer()  // Push the drawer to the bottom
+                        Spacer()
                         VStack {
                             // Drawer handle
                             Capsule()
@@ -134,7 +131,7 @@ struct RidesView: View {
                                             .font(.headline)
                                             .foregroundStyle(.white)
                                             .padding()
-                                        Text("\(originAddress)")
+                                        Text("\(originAddress.isEmpty ? "Not set" : originAddress)")
                                             .font(.headline)
                                             .foregroundStyle(.white)
                                     }
@@ -143,152 +140,68 @@ struct RidesView: View {
                                             .font(.headline)
                                             .foregroundStyle(.white)
                                             .padding()
-                                        Text("\(destinationAddress)")
+                                        Text("\(destinationAddress.isEmpty ? "Not set" : destinationAddress)")
                                             .font(.headline)
                                             .foregroundStyle(.white)
                                     }
                                 }
 
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text("Nearby Rides")
-                                        .font(.system(size: 22, weight: .bold))
-                                        .foregroundColor(.white)
-
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 10)
-                                .padding(.leading)
-
-                                ScrollView(.horizontal) {
-                                    HStack(spacing: 15) {
-                                        VStack {
-                                            Image("cortesV5000")
-                                            ZStack {
-                                                Text("Cortes V5000 Valor")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .leading)
-                                                Text("9:49PM • 8 min")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .trailing)
-                                            }
-                                            .padding(4)
-                                        }
-                                        VStack {
-                                            Image("archerECL")
-                                            ZStack {
-                                                Text("Archer Quartz EC-L")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .leading)
-                                                Text("9:53PM • 12 min")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .trailing)
-                                            }
-                                            .padding(.vertical, 2)
-                                        }
-                                        VStack {
-                                            Image("quadraSportR7")
-                                            ZStack {
-                                                Text("Quadra Sport R-7")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .leading)
-                                                Text("9:46PM • 5 min")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
-                                                    .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .trailing)
-                                            }
-                                            .padding(.vertical, 2)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
+                                Text("Estimated Time: \(driveTime)")
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                    .padding(.top, 8)
                             }
+                            .padding(.bottom, geometry.safeAreaInsets.bottom) // Handle safe area
                         }
-                        .frame(maxWidth: .infinity)
                         .background(Color(hex: "1C1C1E"))
                         .cornerRadius(20)
                         .offset(y: drawerOffset)
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
-                                    // Handle both upward and downward dragging
-                                    if value.translation.height > 0 {
-                                        // Dragging downward
-                                        self.drawerOffset =
-                                            value.translation.height + UIScreen
-                                            .main.bounds.height * 0.4
-                                    } else {
-                                        // Dragging upward (allow reopen)
-                                        self.drawerOffset = max(
-                                            0,
-                                            UIScreen.main.bounds.height * 0.4
-                                                + value.translation.height)
+                                    let newOffset = value.translation.height
+                                    if newOffset > 0 {
+                                        drawerOffset = newOffset
                                     }
                                 }
                                 .onEnded { value in
-                                    withAnimation(.easeInOut(duration: 0.5)) {
-                                        if value.translation.height > 100 {
-                                            isDrawerVisible = false
-                                            drawerOffset =
-                                                UIScreen.main.bounds.height
-                                                * 0.4  // Close the drawer
-                                        } else {
-                                            isDrawerVisible = true
-                                            drawerOffset = 0  // Fully open the drawer
-                                        }
+                                    if value.translation.height > drawerHeight / 2 {
+                                        hideDrawer()
+                                    } else {
+                                        showDrawer()
                                     }
                                 }
                         )
-                        .transition(.move(edge: .bottom))
-                        .animation(
-                            .easeInOut(duration: 0.5), value: isDrawerVisible)
+                        .onAppear {
+                            // Capture the drawer's height
+                            drawerHeight = geometry.size.height
+                            // Initially hide the drawer
+                            drawerOffset = drawerHeight
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    
                 }
             }
-            
+            .onAppear {
+                searchCompleter.delegate = SearchCompleterDelegate(searchResults: $searchResults)
+
+                // Fetch the user's current location
+                region = MKCoordinateRegion(
+                    center: locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
+                    span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
+                )
+                originAddress = locationManager.address
+                print("Origin Address: \(originAddress)")
+                print("Destination Address: \(destinationAddress)")
+
+                checkDrawerVisibility() // Ensure drawer is updated on load if addresses are set
+            }
             .onChange(of: originAddress) { _ in
                 checkDrawerVisibility()
             }
             .onChange(of: destinationAddress) { _ in
                 checkDrawerVisibility()
-            }
-            .onAppear {
-                searchCompleter.delegate = SearchCompleterDelegate(
-                    searchResults: $searchResults)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -297,21 +210,34 @@ struct RidesView: View {
             Text("Rides")
         }
     }
-    
-    private func checkDrawerVisibility() {
-        if !originAddress.isEmpty && !destinationAddress.isEmpty {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                isDrawerVisible = true
-                drawerOffset = 0  // Open the drawer
-            }
-        } else {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                isDrawerVisible = false
-                drawerOffset = UIScreen.main.bounds.height * 0.4  // Close the drawer
-            }
+
+    func showDrawer() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isDrawerVisible = true
+            drawerOffset = 0
         }
     }
 
+    func checkDrawerVisibility() {
+        if !originAddress.isEmpty && !destinationAddress.isEmpty {
+            // Both addresses are filled, show the drawer
+            showDrawer()
+        } else if !originAddress.isEmpty || !destinationAddress.isEmpty {
+            // At least one address is filled, keep the drawer hidden but allow it to be reopened
+            if !isDrawerVisible {
+                drawerOffset = drawerHeight * 0.8 // Allow partial visibility so it's draggable
+            }
+        } else {
+            hideDrawer()
+        }
+    }
+
+    func hideDrawer() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isDrawerVisible = false
+            drawerOffset = drawerHeight * 0.95 // Keep a small portion visible for dragging
+        }
+    }
 
     // Function to calculate route to destination
     func calculateRouteToDestination() {
@@ -334,8 +260,7 @@ struct RidesView: View {
                     self.route = route // Store the route to draw on the map
                     driveTime = "\(Int(route.expectedTravelTime / 60)) min"
                     withAnimation(.easeInOut(duration: 0.5)) {
-                        isDrawerVisible = true
-                        drawerOffset = minDrawerHeight  // Fully open the drawer when route is calculated
+                        showDrawer()
                     }
                 }
             }
