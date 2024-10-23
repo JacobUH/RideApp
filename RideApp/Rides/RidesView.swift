@@ -156,7 +156,7 @@ struct RidesView: View {
 
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 10)
+                            .padding(.vertical)
                             .padding(.leading)
 
                             ScrollView(.horizontal) {
@@ -206,6 +206,9 @@ struct RidesView: View {
                                 }
                             }
                             .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            
+                            
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -253,7 +256,7 @@ struct RidesView: View {
                     center: locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
                     span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
                 )
-                originAddress = locationManager.address
+//                originAddress = locationManager.address
                 print("Origin Address: \(originAddress)")
                 print("Destination Address: \(destinationAddress)")
 
@@ -267,6 +270,9 @@ struct RidesView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+//        .navigationDestination(for : Car.self){
+//
+//        }
         .tabItem {
             Image(systemName: "mappin.and.ellipse")
             Text("Rides")
@@ -329,6 +335,7 @@ struct RidesView: View {
             }
         }
     }
+    
 }
 
 class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
