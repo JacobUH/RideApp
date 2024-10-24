@@ -14,10 +14,11 @@ struct RentalDetailView: View {
     
     @State private var currentImageIndex = 0
     var carModel: CarDetails
+    @Binding var navigationPath: NavigationPath
+
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
-        NavigationView {
             
             ZStack {
                 Color(hex: "1C1C1E")
@@ -54,6 +55,7 @@ struct RentalDetailView: View {
                                         .font(.system(size: 24, weight: .bold))
                                         .padding(.leading).padding(.bottom, 10)
                                     
+                                    DetailRow(label: "Car Type", desc: carModel.carType)
                                     DetailRow(label: "Interior Color", desc: carModel.interior)
                                     DetailRow(label: "Exterior Color", desc: carModel.exterior)
                                     DetailRow(label: "Engine", desc: carModel.engine)
@@ -84,7 +86,7 @@ struct RentalDetailView: View {
                             Spacer()
                             
                             NavigationLink(
-                                destination: RentalDateView(carModel: carModel)
+                                destination: RentalDateView(carModel: carModel, navigationPath: $navigationPath)
                                     .navigationBarBackButtonHidden(true)
                                     .toolbar(.hidden, for: .tabBar)
                             ) {
@@ -105,7 +107,7 @@ struct RentalDetailView: View {
                     else if orientation.isLandscape(device: .iPhone) {}
                 }
             }
-        }
+        
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
