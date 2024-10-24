@@ -13,24 +13,15 @@ struct RidesDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var currentImageIndex = 0
+    var distanceCost: Double
+    var origin: String
+    var destinaiton: String
+    
     var carModel: CarDetails
-    
-    @State private var carList: [CarDetails] = []
-    
-    func loadCarData() {
-        if let jsonData = CarData.jsonString.data(using: .utf8) {
-            do {
-                let decodedData = try JSONDecoder().decode(CarList.self, from: jsonData)
-                carList = decodedData.cars
-            } catch {
-                print("Failed to decode JSON: \(error)")
-            }
-        }
-    }
     
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
-        NavigationView {
+       
             
             ZStack {
                 Color(hex: "1C1C1E")
@@ -90,14 +81,19 @@ struct RidesDetailView: View {
                         }
                         Spacer()
                         HStack {
-                            Text("$" + carModel.dailyCost + "/day \nTax included at checkout")
+                            Text("$" +  String(format: "%.2f", distanceCost) + "\nTax included at checkout")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.white)
                                 .padding(.leading, 25)
                             Spacer()
                             
                             NavigationLink(
-                                destination: RentalDateView(carModel: carModel)
+                                destination: RidesCheckoutView(
+                                    carModel: carModel,
+                                    origin: origin,
+                                    destination: destinaiton,
+                                    subtotal: distanceCost
+                                )
                                     .navigationBarBackButtonHidden(true)
                                     .toolbar(.hidden, for: .tabBar)
                             ) {
@@ -117,7 +113,6 @@ struct RidesDetailView: View {
                     
                     else if orientation.isLandscape(device: .iPhone) {}
                 }
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

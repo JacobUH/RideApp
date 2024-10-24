@@ -9,26 +9,29 @@ struct SearchResult: Identifiable {
 }
 
 struct RidesView: View {
-    @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
-    @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
+    @Environment(\.verticalSizeClass) var heightSizeClass:
+        UserInterfaceSizeClass?
+    @Environment(\.horizontalSizeClass) var widthSizeClass:
+        UserInterfaceSizeClass?
 
     @StateObject private var locationManager = LocationManager()
     @State private var searchCompleter = MKLocalSearchCompleter()
     @State private var searchResults = [SearchResult]()
 
-    @State public var destinationAddress: String = "65 Park Ln"
+    @State public var destinationAddress: String = ""
     @State public var originAddress: String = "13418 Misty Orchard Ln"
     @State public var driveTime: String = "Next Stop?"
     @State private var selectedCar: CarDetails?
+    @State private var path = NavigationPath()
 
     @State private var cars: [CarDetails] = []
 
     func loadCarData() {
         if let jsonData = CarData.jsonString.data(using: .utf8) {
             do {
-                let decodedData = try JSONDecoder().decode(CarList.self, from: jsonData)
+                let decodedData = try JSONDecoder().decode(
+                    CarList.self, from: jsonData)
                 cars = decodedData.cars
-                print("Cars List: ", cars)
             } catch {
                 print("Failed to decode JSON: \(error)")
             }
@@ -36,7 +39,8 @@ struct RidesView: View {
     }
 
     @State private var isDrawerVisible: Bool = false
-    @State private var drawerOffset: CGFloat = UIScreen.main.bounds.height * 0.95
+    @State private var drawerOffset: CGFloat =
+        UIScreen.main.bounds.height * 0.95
     @State private var drawerHeight: CGFloat = 0
 
     @State private var region = MKCoordinateRegion(
@@ -47,9 +51,10 @@ struct RidesView: View {
     @State private var route: MKRoute?
 
     var body: some View {
-        let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
+        let orientation = DeviceHelper(
+            widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
 
-        NavigationView {
+        NavigationStack(path: $path) {
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
@@ -72,18 +77,23 @@ struct RidesView: View {
                                     TextField(
                                         "",
                                         text: $destinationAddress,
-                                        prompt: Text("\(Image(systemName: "magnifyingglass")) Where To?")
-                                            .foregroundStyle(.white)
+                                        prompt: Text(
+                                            "\(Image(systemName: "magnifyingglass")) Where To?"
+                                        )
+                                        .foregroundStyle(.white)
                                     )
                                     .padding(20)
-                                    .background(Color(hex: "303033").opacity(0.8))
+                                    .background(
+                                        Color(hex: "303033").opacity(0.8)
+                                    )
                                     .cornerRadius(24)
                                     .padding(.horizontal, 32)
                                     .padding(.top, 10)
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
                                     .autocorrectionDisabled()
-                                    .onChange(of: destinationAddress) { newValue in
+                                    .onChange(of: destinationAddress) {
+                                        newValue in
                                         searchCompleter.queryFragment = newValue
                                         checkDrawerVisibility()
                                     }
@@ -173,13 +183,23 @@ struct RidesView: View {
                                                 .frame(width: 250, height: 142)
                                             ZStack {
                                                 Text(car.carName)
-                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .font(
+                                                        Font.custom(
+                                                            "SF Pro", size: 12)
+                                                    )
                                                     .foregroundColor(.white)
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                    .frame(
+                                                        maxWidth: .infinity,
+                                                        alignment: .leading)
                                                 Text("9:49PM • 8 min")
-                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .font(
+                                                        Font.custom(
+                                                            "SF Pro", size: 12)
+                                                    )
                                                     .foregroundColor(.white)
-                                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                                    .frame(
+                                                        maxWidth: .infinity,
+                                                        alignment: .trailing)
                                             }
                                             .padding(4)
                                         }
@@ -194,9 +214,14 @@ struct RidesView: View {
 
                             if let car = selectedCar {
                                 NavigationLink(
-                                    destination: RidesDetailView(carModel: car)
-                                        .navigationBarBackButtonHidden(true)
-                                        .toolbar(.hidden, for: .tabBar)
+                                    destination: RidesDetailView(
+                                        distanceCost: 100.00,
+                                        origin: originAddress,
+                                        destinaiton: destinationAddress,
+                                        carModel: car
+                                    )
+                                    .navigationBarBackButtonHidden(true)
+                                    .toolbar(.hidden, for: .tabBar)
                                 ) {
                                     HStack {
                                         Text("Confirm \(car.carName)")
@@ -205,7 +230,9 @@ struct RidesView: View {
                                         .background(.blue)
                                         .cornerRadius(20)
                                         .padding()
-                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                        .transition(
+                                            .move(edge: .bottom).combined(
+                                                with: .opacity))
                                 }
                             }
                         }
@@ -218,16 +245,22 @@ struct RidesView: View {
                         DragGesture()
                             .onChanged { value in
                                 if value.translation.height > 0 {
-                                    self.drawerOffset = value.translation.height + UIScreen.main.bounds.height * 0.95
+                                    self.drawerOffset =
+                                        value.translation.height + UIScreen.main
+                                        .bounds.height * 0.95
                                 } else {
-                                    self.drawerOffset = max(0, UIScreen.main.bounds.height * 0.3 + value.translation.height)
+                                    self.drawerOffset = max(
+                                        0,
+                                        UIScreen.main.bounds.height * 0.3
+                                            + value.translation.height)
                                 }
                             }
                             .onEnded { value in
                                 withAnimation(.easeInOut(duration: 0.5)) {
                                     if value.translation.height > 100 {
                                         isDrawerVisible = false
-                                        drawerOffset = UIScreen.main.bounds.height * 0.95
+
+                                        hideDrawer()
                                     } else {
                                         isDrawerVisible = true
                                         drawerOffset = 0
@@ -236,17 +269,22 @@ struct RidesView: View {
                             }
                     )
                     .transition(.move(edge: .bottom))
-                    .animation(.easeInOut(duration: 0.5), value: isDrawerVisible)
+                    .animation(
+                        .easeInOut(duration: 0.5), value: isDrawerVisible)
                 }
             }
             .onAppear {
                 loadCarData()
-                searchCompleter.delegate = SearchCompleterDelegate(searchResults: $searchResults)
+                searchCompleter.delegate = SearchCompleterDelegate(
+                    searchResults: $searchResults)
 
                 // Fetch the user's current location
                 region = MKCoordinateRegion(
-                    center: locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
-                    span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
+                    center: locationManager.userLocation
+                        ?? CLLocationCoordinate2D(
+                            latitude: 29.7295, longitude: -95.3443),
+                    span: MKCoordinateSpan(
+                        latitudeDelta: 0.09, longitudeDelta: 0.09)
                 )
 
                 checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
@@ -296,14 +334,19 @@ struct RidesView: View {
         guard let userLocation = locationManager.userLocation else { return }
 
         let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
+        request.source = MKMapItem(
+            placemark: MKPlacemark(coordinate: userLocation))
 
         // Geocode destination to get coordinates
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(destinationAddress) { placemarks, error in
-            guard let placemark = placemarks?.first, let destinationLocation = placemark.location else { return }
+            guard let placemark = placemarks?.first,
+                let destinationLocation = placemark.location
+            else { return }
 
-            request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destinationLocation.coordinate))
+            request.destination = MKMapItem(
+                placemark: MKPlacemark(
+                    coordinate: destinationLocation.coordinate))
             request.transportType = .automobile
 
             let directions = MKDirections(request: request)
