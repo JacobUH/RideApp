@@ -141,10 +141,10 @@ struct RidesView: View {
                             .frame(width: 40, height: 6)
                             .foregroundColor(.gray)
                             .padding(.top, 8)
-
-                        VStack {
+                        
+                        VStack(alignment: .leading) {
                             HStack(spacing: 40) {
-                                VStack {
+                                VStack(alignment: .leading) {
                                     Text("From")
                                         .font(.headline)
                                         .foregroundStyle(.white)
@@ -152,8 +152,9 @@ struct RidesView: View {
                                     Text("\(originAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
+                                        .padding(.leading, 16)
                                 }
-                                VStack {
+                                VStack(alignment: .leading) {
                                     Text("To")
                                         .font(.headline)
                                         .foregroundStyle(.white)
@@ -161,8 +162,12 @@ struct RidesView: View {
                                     Text("\(destinationAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
+                                        .padding(.leading, 16)
                                 }
                             }
+                        
+                    
+
 
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Nearby Rides")
@@ -191,7 +196,8 @@ struct RidesView: View {
                                                     .frame(
                                                         maxWidth: .infinity,
                                                         alignment: .leading)
-                                                Text("9:49PM • 8 min")
+                                                
+                                                Text("\(DateFormatter.localizedString(from: Calendar.current.date(byAdding: .minute, value: 10, to: Date())!, dateStyle: .none, timeStyle: .short)) • 10 min")
                                                     .font(
                                                         Font.custom(
                                                             "SF Pro", size: 12)
