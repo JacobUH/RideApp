@@ -15,6 +15,7 @@ struct RentalCheckoutView: View {
     var carModel: CarDetails
     var pickupDate: Date
     var dropoffDate: Date
+    @Binding var navigationPath: NavigationPath // Add this binding
     
     var dailyCost: Double {
         let cleanString = carModel.dailyCost.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "")
@@ -163,7 +164,8 @@ struct RentalCheckoutView: View {
                                 carModel: carModel,
                                 pickupDate: pickupDate,
                                 dropoffDate: dropoffDate,
-                                totalCost: totalCost
+                                totalCost: totalCost,
+                                navigationPath: $navigationPath
                             )
                             .navigationBarBackButtonHidden(true)
                             .toolbar(.hidden, for: .tabBar)

@@ -57,6 +57,8 @@ struct HomeView: View {
                             HStack (spacing: 15) {
                                 VStack {
                                     Image("herreraRiptide")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Herrera Riptide - Terrier")
                                         .font(Font.custom("SF Pro", size: 12))
@@ -68,10 +70,12 @@ struct HomeView: View {
                                         .frame(maxWidth: .infinity, alignment: .trailing)
 
                                     }
-                                    .padding(4)
+                                    .padding(.vertical, 2)
                                 }
                                 VStack {
-                                    Image("archerQuartz")
+                                    Image("archerQuartzBandit")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Archer Quartz")
                                         .font(Font.custom("SF Pro", size: 12))
@@ -86,6 +90,8 @@ struct HomeView: View {
                                 }
                                 VStack {
                                     Image("chevillionThrax")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Chevillion Thrax")
                                         .font(Font.custom("SF Pro", size: 12))
@@ -125,7 +131,9 @@ struct HomeView: View {
                         ScrollView (.horizontal) {
                             HStack (spacing: 15) {
                                 VStack {
-                                    Image("cortesV5000")
+                                    Image("cortesV5000Valor")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Cortes V5000 Valor")
                                         .font(Font.custom("SF Pro", size: 12))
@@ -140,7 +148,9 @@ struct HomeView: View {
                                     .padding(4)
                                 }
                                 VStack {
-                                    Image("archerECL")
+                                    Image("archerQuartzECL")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Archer Quartz EC-L")
                                         .font(Font.custom("SF Pro", size: 12))
@@ -155,6 +165,8 @@ struct HomeView: View {
                                 }
                                 VStack {
                                     Image("quadraSportR7")
+                                        .resizable()
+                                        .frame(width: 250, height: 140)
                                     ZStack {
                                       Text("Quadra Sport R-7")
                                         .font(Font.custom("SF Pro", size: 12))
