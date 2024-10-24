@@ -17,22 +17,28 @@ struct OrderSummaryView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Order Summary")
                 .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
                 .padding([.top, .bottom], 5)
             
             Text("Vehicle:\n" + carModel.carName)
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
             
             Text("Pickup Location:\n" + "Ride Plaza, 1500 Velocity Drive, Houston, TX 77002")
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
             
             Text("Pickup Date:\n" + pickup)
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
             
             Text("Dropoff Date:\n" + dropoff)
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
 
             Text("Total Amount:\n" + "$" + String(totalCost) + " ~ " + "Apple Pay")
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
@@ -41,17 +47,21 @@ struct OrderSummaryView: View {
         VStack(alignment: .leading, spacing: 5) {
             Text("What's Next")
                 .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
                 .padding(.top, 15)
                 .padding(.bottom, 5)
             
             Text("You’ll receive a reminder 24 hours before your pickup.")
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
 
             Text("Please arrive at Ride Plaza at your scheduled time.")
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
 
             Text("Bring your valid ID for a smooth handoff.")
                 .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white)
             
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -107,6 +117,7 @@ struct RentalConfirmationView: View {
                     
                     Text("We’ve got everything ready for your upcoming ride. If we have any questions, we’ll reach out to you directly.")
                         .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
                         .padding(.all)
                     
                     OrderSummaryView(carModel: carModel, pickup: pickup, dropoff: dropoff, totalCost: totalCost)

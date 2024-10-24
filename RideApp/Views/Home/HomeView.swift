@@ -10,11 +10,47 @@ import SwiftUI
 struct HomeView: View {    
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
-
+    @State private var carList: [CarDetails] = []
+    @State private var filteredPopularCars: [CarDetails] = []
+    @State private var filteredNearbyCars: [CarDetails] = []
+    @State private var navigationPath = NavigationPath()
+    
+    @State public var destinationAddress: String = ""
+    @State public var originAddress: String = "13418 Misty Orchard Ln"
+    @State public var driveTime: String = "Next Stop?"
+    
+    enum CarType: Hashable {
+        case popular(CarDetails)
+        case nearby(CarDetails)
+    }
+    
+    func loadCarData() {
+        if let jsonData = CarData.jsonString.data(using: .utf8) {
+            do {
+                let decodedData = try JSONDecoder().decode(CarList.self, from: jsonData)
+                carList = decodedData.cars
+            } catch {
+                print("Failed to decode JSON: \(error)")
+            }
+        }
+    }
+    
+    func filterPopularCars() {
+        filteredPopularCars = carList.filter { car in
+            car.carName == "Herrera Riptide - Terrier" || car.carName == "Archer Quartz - Bandit" || car.carName == "Chevillion Thrax - Jefferson"
+        }
+    }
+    
+    func filterNearbyCars() {
+        filteredNearbyCars = carList.filter { car in
+            car.carName == "Cortes V5000 Valor" || car.carName == "Archer Quartz EC-L" || car.carName == "Quadra Sport R-7"
+        }
+    }
+    
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
         
-        NavigationView(content: {
+        NavigationStack(path: $navigationPath){
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
@@ -36,7 +72,7 @@ struct HomeView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 3) {
-                          Text("Popular Rentals")
+                            Text("Popular Rentals")
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundColor(.white)
                             HStack (spacing: 0) {
@@ -44,8 +80,8 @@ struct HomeView: View {
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.white)
                                 Text(" rentals here")
-                                      .font(.system(size: 12, weight: .regular))
-                                      .foregroundColor(Color(hex: "4FA0FF"))
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color(hex: "4FA0FF"))
                             }
                           
                         }
@@ -53,63 +89,34 @@ struct HomeView: View {
                         .padding(.top, 1).padding(.leading)
 
                         
-                        ScrollView (.horizontal) {
-                            HStack (spacing: 15) {
-                                VStack {
-                                    Image("herreraRiptide")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Herrera Riptide - Terrier")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("$74/day")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
+                        ScrollView(.horizontal) {
+                            HStack(spacing: 15) {
+                                ForEach(filteredPopularCars, id: \.self) { car in
+                                    Button {
+                                        navigationPath.append(CarType.popular(car))
+                                    } label: {
+                                        VStack {
+                                            Image(car.images[0])
+                                                .resizable()
+                                                .frame(width: 250, height: 140)
+                                            ZStack {
+                                                Text(car.carName)
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                Text("$\(car.dailyCost)/day")
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                            }
+                                            .padding(.vertical, 2)
+                                        }
                                     }
-                                    .padding(.vertical, 2)
-                                }
-                                VStack {
-                                    Image("archerQuartzBandit")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Archer Quartz")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("$45/day")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                    }
-                                    .padding(.vertical, 2)
-                                }
-                                VStack {
-                                    Image("chevillionThrax")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Chevillion Thrax")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("$37/day")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    }
-                                    .padding(.vertical, 2)
                                 }
                             }
-                            
-                            
                         }
                         .padding(.horizontal)
+
 
                         VStack(alignment: .leading, spacing: 3) {
                           Text("Nearby Rides")
@@ -127,58 +134,30 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 10).padding(.leading)
-                        
-                        ScrollView (.horizontal) {
-                            HStack (spacing: 15) {
-                                VStack {
-                                    Image("cortesV5000Valor")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Cortes V5000 Valor")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("9:49PM • 8 min")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
+                         
+                        ScrollView(.horizontal) {
+                            HStack(spacing: 15) {
+                                ForEach(filteredNearbyCars, id: \.self) { car in
+                                    Button {
+                                        navigationPath.append(CarType.nearby(car))
+                                    } label: {
+                                        VStack {
+                                            Image(car.images[0])
+                                                .resizable()
+                                                .frame(width: 250, height: 140)
+                                            ZStack {
+                                                Text(car.carName)
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                Text("$\(car.dailyCost)/day")
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                            }
+                                            .padding(.vertical, 2)
+                                        }
                                     }
-                                    .padding(4)
-                                }
-                                VStack {
-                                    Image("archerQuartzECL")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Archer Quartz EC-L")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("9:53PM • 12 min")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                    }
-                                    .padding(.vertical, 2)
-                                }
-                                VStack {
-                                    Image("quadraSportR7")
-                                        .resizable()
-                                        .frame(width: 250, height: 140)
-                                    ZStack {
-                                      Text("Quadra Sport R-7")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                      Text("9:46PM • 5 min")
-                                        .font(Font.custom("SF Pro", size: 12))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    }
-                                    .padding(.vertical, 2)
                                 }
                             }
                         }
@@ -189,6 +168,11 @@ struct HomeView: View {
                     else if orientation.isLandscape(device: .iPhone){}
                     else {}
                 }
+                .onAppear {
+                    loadCarData()
+                    filterPopularCars()
+                    filterNearbyCars()
+                }
                 .toolbar {
                     ToolbarItem(placement: .principal) {
                         Text("RIDE")
@@ -197,9 +181,29 @@ struct HomeView: View {
                     }
                 }
                 .navigationBarTitleDisplayMode(.inline)
+                .navigationDestination(for: CarType.self) { carType in
+                    switch carType {
+                    case .popular(let car):
+                        RentalDetailView(carModel: car, navigationPath: $navigationPath)
+                            .navigationBarBackButtonHidden(true)
+                            .toolbar(.hidden, for: .tabBar)
+                        
+                    case .nearby(let car):
+                        RidesDetailView(
+                            distanceCost: 100.00,
+                            origin: originAddress,
+                            destinaiton: destinationAddress,
+                            carModel: car,
+                            navigationPath: $navigationPath
+                        )
+                            .navigationBarBackButtonHidden(true)
+                            .toolbar(.hidden, for: .tabBar)
+                    }
+                }
+
             }
            
-        })
+        }
         
         .navigationViewStyle(StackNavigationViewStyle())
         .tabItem {

@@ -117,11 +117,13 @@ struct RentalCheckoutView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text("Pickup Date")
                                 .font(.system(size: 16))
+                                .foregroundStyle(.white)
                            Text(pickupDate.formatted(.dateTime.year().month(.abbreviated).day()))
                                     .font(.system(size: 20))
                                     .foregroundStyle(Color(.blue))
                             Text(pickupDate.formatted(.dateTime.hour().minute()))
                                 .font(.system(size: 15))
+                                .foregroundStyle(.white)
                         }
                         .padding(.leading)
                         Spacer()
@@ -135,11 +137,13 @@ struct RentalCheckoutView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text("Dropoff Date")
                                 .font(.system(size: 16))
+                                .foregroundStyle(.white)
                             Text(dropoffDate.formatted(.dateTime.year().month(.abbreviated).day()))
                                     .font(.system(size: 20))
                                     .foregroundStyle(Color(.blue))
                             Text(dropoffDate.formatted(.dateTime.hour().minute()))
                                 .font(.system(size: 15))
+                                .foregroundStyle(.white)
                         }
                         .padding(.trailing)
                     }

@@ -18,11 +18,11 @@ struct RidesDetailView: View {
     var destinaiton: String
     
     var carModel: CarDetails
+    @Binding var navigationPath: NavigationPath
     
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
        
-            
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
@@ -92,7 +92,8 @@ struct RidesDetailView: View {
                                     carModel: carModel,
                                     origin: origin,
                                     destination: destinaiton,
-                                    subtotal: distanceCost
+                                    subtotal: distanceCost,
+                                    navigationPath: $navigationPath
                                 )
                                     .navigationBarBackButtonHidden(true)
                                     .toolbar(.hidden, for: .tabBar)

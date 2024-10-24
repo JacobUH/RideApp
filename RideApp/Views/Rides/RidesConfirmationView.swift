@@ -71,6 +71,7 @@ struct RidesConfirmationView: View {
     var destination: String
     var origin: String
     var totalCost: Double
+    @Binding var navigationPath: NavigationPath
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -100,11 +101,9 @@ struct RidesConfirmationView: View {
                     
                     Spacer()
                     VStack {
-                        NavigationLink(
-                            destination: ContentView()
-                                .navigationBarBackButtonHidden(true)
-                                .toolbar(.hidden, for: .tabBar)
-                        ) {
+                        Button(action: {
+                            navigationPath = NavigationPath()
+                        }) {
                             Text("Continue")
                                 .font(.system(size: 16))
                                 .foregroundColor(.black)

@@ -16,6 +16,7 @@ struct RidesCheckoutView: View {
     var origin: String
     var destination: String
     var subtotal: Double
+    @Binding var navigationPath: NavigationPath
     
     var numberOfMiles: Double = 10
     
@@ -152,7 +153,11 @@ struct RidesCheckoutView: View {
                     VStack {
                         NavigationLink(
                             destination: RidesConfirmationView(
-                                carModel: carModel, destination: destination, origin: origin,  totalCost: 100
+                                carModel: carModel,
+                                destination: destination,
+                                origin: origin,
+                                totalCost: 100,
+                                navigationPath: $navigationPath
                             )
                             .navigationBarBackButtonHidden(true)
                             .toolbar(.hidden, for: .tabBar)

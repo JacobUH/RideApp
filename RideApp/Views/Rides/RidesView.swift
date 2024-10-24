@@ -22,7 +22,7 @@ struct RidesView: View {
     @State public var originAddress: String = "13418 Misty Orchard Ln"
     @State public var driveTime: String = "Next Stop?"
     @State private var selectedCar: CarDetails?
-    @State private var path = NavigationPath()
+    @State private var navigationPath = NavigationPath()
 
     @State private var cars: [CarDetails] = []
 
@@ -54,7 +54,7 @@ struct RidesView: View {
         let orientation = DeviceHelper(
             widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
 
-        NavigationStack(path: $path) {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
@@ -142,9 +142,9 @@ struct RidesView: View {
                             .foregroundColor(.gray)
                             .padding(.top, 8)
 
-                        VStack {
+                        VStack(alignment: .leading)  {
                             HStack(spacing: 40) {
-                                VStack {
+                                VStack(alignment: .leading) {
                                     Text("From")
                                         .font(.headline)
                                         .foregroundStyle(.white)
@@ -152,8 +152,9 @@ struct RidesView: View {
                                     Text("\(originAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
+                                        .padding(.leading, 16)
                                 }
-                                VStack {
+                                VStack(alignment: .leading) {
                                     Text("To")
                                         .font(.headline)
                                         .foregroundStyle(.white)
@@ -161,6 +162,7 @@ struct RidesView: View {
                                     Text("\(destinationAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
+                                        .padding(.leading, 16)
                                 }
                             }
 
@@ -183,23 +185,13 @@ struct RidesView: View {
                                                 .frame(width: 250, height: 142)
                                             ZStack {
                                                 Text(car.carName)
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
+                                                    .font(Font.custom("SF Pro", size: 12))
                                                     .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .leading)
-                                                Text("9:49PM • 8 min")
-                                                    .font(
-                                                        Font.custom(
-                                                            "SF Pro", size: 12)
-                                                    )
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                Text("\(DateFormatter.localizedString(from: Calendar.current.date(byAdding: .minute, value: 10, to: Date())!, dateStyle: .none, timeStyle: .short)) • 10 min")
+                                                    .font(Font.custom("SF Pro", size: 12))
                                                     .foregroundColor(.white)
-                                                    .frame(
-                                                        maxWidth: .infinity,
-                                                        alignment: .trailing)
+                                                    .frame(maxWidth: .infinity, alignment: .trailing)
                                             }
                                             .padding(4)
                                         }
@@ -213,28 +205,31 @@ struct RidesView: View {
                             .padding(.bottom, 10)
 
                             if let car = selectedCar {
-                                NavigationLink(
-                                    destination: RidesDetailView(
-                                        distanceCost: 100.00,
-                                        origin: originAddress,
-                                        destinaiton: destinationAddress,
-                                        carModel: car
-                                    )
-                                    .navigationBarBackButtonHidden(true)
-                                    .toolbar(.hidden, for: .tabBar)
-                                ) {
+                                Button {
+                                    navigationPath.append(car)
+                                } label: {
                                     HStack {
                                         Text("Confirm \(car.carName)")
                                             .foregroundStyle(.white)
-                                    }.frame(maxWidth: .infinity, maxHeight: 60)
-                                        .background(.blue)
-                                        .cornerRadius(20)
-                                        .padding()
-                                        .transition(
-                                            .move(edge: .bottom).combined(
-                                                with: .opacity))
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: 60)
+                                    .background(.blue)
+                                    .cornerRadius(20)
+                                    .padding()
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
                                 }
                             }
+                        }
+                        .navigationDestination(for: CarDetails.self) { car in
+                            RidesDetailView(
+                                distanceCost: 100.00,
+                                origin: originAddress,
+                                destinaiton: destinationAddress,
+                                carModel: car,
+                                navigationPath: $navigationPath
+                            )
+                            .navigationBarBackButtonHidden(true)
+                            .toolbar(.hidden, for: .tabBar)
                         }
                     }
                     .frame(maxWidth: .infinity)
