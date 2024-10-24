@@ -19,17 +19,32 @@ struct RidesView: View {
     @State public var destinationAddress: String = "65 Park Ln"
     @State public var originAddress: String = "13418 Misty Orchard Ln"
     @State public var driveTime: String = "Next Stop?"
+    @State private var selectedCar: CarDetails?
+
+    @State private var cars: [CarDetails] = []
+
+    func loadCarData() {
+        if let jsonData = CarData.jsonString.data(using: .utf8) {
+            do {
+                let decodedData = try JSONDecoder().decode(CarList.self, from: jsonData)
+                cars = decodedData.cars
+                print("Cars List: ", cars)
+            } catch {
+                print("Failed to decode JSON: \(error)")
+            }
+        }
+    }
 
     @State private var isDrawerVisible: Bool = false
-    @State private var drawerOffset: CGFloat = UIScreen.main.bounds.height * 0.95  // Start with the drawer closed with only the capsule visible
-    @State private var drawerHeight: CGFloat = 0  // Will be set dynamically
+    @State private var drawerOffset: CGFloat = UIScreen.main.bounds.height * 0.95
+    @State private var drawerHeight: CGFloat = 0
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
         span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
     )
 
-    @State private var route: MKRoute?  // To store the calculated route
+    @State private var route: MKRoute?
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -48,7 +63,6 @@ struct RidesView: View {
                                 .padding(.vertical, 4)
 
                             ZStack(alignment: .top) {
-                                // Use RouteMapView for displaying the map with routes
                                 RouteMapView(region: $region, route: $route)
                                     .frame(maxWidth: .infinity, maxHeight: 700)
                                     .edgesIgnoringSafeArea(.all)
@@ -58,15 +72,11 @@ struct RidesView: View {
                                     TextField(
                                         "",
                                         text: $destinationAddress,
-                                        prompt: Text(
-                                            "\(Image(systemName: "magnifyingglass")) Where To?"
-                                        )
-                                        .foregroundStyle(.white)
+                                        prompt: Text("\(Image(systemName: "magnifyingglass")) Where To?")
+                                            .foregroundStyle(.white)
                                     )
                                     .padding(20)
-                                    .background(
-                                        Color(hex: "303033").opacity(0.8)
-                                    )
+                                    .background(Color(hex: "303033").opacity(0.8))
                                     .cornerRadius(24)
                                     .padding(.horizontal, 32)
                                     .padding(.top, 10)
@@ -85,7 +95,6 @@ struct RidesView: View {
                     }
                 }
 
-                // Search Results List
                 if !searchResults.isEmpty {
                     List(searchResults) { result in
                         VStack(alignment: .leading) {
@@ -107,26 +116,22 @@ struct RidesView: View {
                     .padding(.horizontal, 32)
                 }
 
-                // Background overlay when drawer is visible
                 if isDrawerVisible {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .onTapGesture {
-                            hideDrawer()  // Tap outside to hide drawer
+                            hideDrawer()
                         }
                 }
 
-                // Drawer Popup at the bottom of the screen
                 VStack {
-                    Spacer()  // Push the drawer to the bottom
+                    Spacer()
                     VStack {
-                        // Drawer handle
                         Capsule()
                             .frame(width: 40, height: 6)
                             .foregroundColor(.gray)
                             .padding(.top, 8)
 
-                        // Drawer content
                         VStack {
                             HStack(spacing: 40) {
                                 VStack {
@@ -153,7 +158,6 @@ struct RidesView: View {
                                 Text("Nearby Rides")
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(.white)
-
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical)
@@ -161,54 +165,49 @@ struct RidesView: View {
 
                             ScrollView(.horizontal) {
                                 HStack(spacing: 15) {
-                                    VStack {
-                                        Image("cortesV5000")
-                                        ZStack {
-                                            Text("Cortes V5000 Valor")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                            Text("9:49PM • 8 min")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                    ForEach(cars, id: \.carName) { car in
+                                        VStack {
+                                            Image(car.images.first ?? "")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 250, height: 142)
+                                            ZStack {
+                                                Text(car.carName)
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                Text("9:49PM • 8 min")
+                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .foregroundColor(.white)
+                                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                            }
+                                            .padding(4)
                                         }
-                                        .padding(4)
-                                    }
-                                    VStack {
-                                        Image("archerECL")
-                                        ZStack {
-                                            Text("Archer Quartz EC-L")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                            Text("9:53PM • 12 min")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .onTapGesture {
+                                            selectedCar = car
                                         }
-                                        .padding(.vertical, 2)
-                                    }
-                                    VStack {
-                                        Image("quadraSportR7")
-                                        ZStack {
-                                            Text("Quadra Sport R-7")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                            Text("9:46PM • 5 min")
-                                                .font(Font.custom("SF Pro", size: 12))
-                                                .foregroundColor(.white)
-                                                .frame(maxWidth: .infinity, alignment: .trailing)
-                                        }
-                                        .padding(.vertical, 2)
                                     }
                                 }
                             }
                             .padding(.horizontal)
                             .padding(.bottom, 10)
-                            
-                            
+
+                            if let car = selectedCar {
+                                NavigationLink(
+                                    destination: RidesDetailView(carModel: car)
+                                        .navigationBarBackButtonHidden(true)
+                                        .toolbar(.hidden, for: .tabBar)
+                                ) {
+                                    HStack {
+                                        Text("Confirm \(car.carName)")
+                                            .foregroundStyle(.white)
+                                    }.frame(maxWidth: .infinity, maxHeight: 60)
+                                        .background(.blue)
+                                        .cornerRadius(20)
+                                        .padding()
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -218,26 +217,18 @@ struct RidesView: View {
                     .gesture(
                         DragGesture()
                             .onChanged { value in
-                                // Handle both upward and downward dragging
                                 if value.translation.height > 0 {
-                                    // Dragging downward from the new closed state
                                     self.drawerOffset = value.translation.height + UIScreen.main.bounds.height * 0.95
                                 } else {
-                                    // Dragging upward (allow reopen)
-                                    self.drawerOffset = max(
-                                        0,
-                                        UIScreen.main.bounds.height * 0.3 + value.translation.height
-                                    )
+                                    self.drawerOffset = max(0, UIScreen.main.bounds.height * 0.3 + value.translation.height)
                                 }
                             }
                             .onEnded { value in
                                 withAnimation(.easeInOut(duration: 0.5)) {
                                     if value.translation.height > 100 {
-                                        // Close the drawer to show only the capsule
                                         isDrawerVisible = false
                                         drawerOffset = UIScreen.main.bounds.height * 0.95
                                     } else {
-                                        // Fully open the drawer
                                         isDrawerVisible = true
                                         drawerOffset = 0
                                     }
@@ -249,6 +240,7 @@ struct RidesView: View {
                 }
             }
             .onAppear {
+                loadCarData()
                 searchCompleter.delegate = SearchCompleterDelegate(searchResults: $searchResults)
 
                 // Fetch the user's current location
@@ -256,9 +248,6 @@ struct RidesView: View {
                     center: locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 29.7295, longitude: -95.3443),
                     span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09)
                 )
-//                originAddress = locationManager.address
-                print("Origin Address: \(originAddress)")
-                print("Destination Address: \(destinationAddress)")
 
                 checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
             }
@@ -270,9 +259,6 @@ struct RidesView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-//        .navigationDestination(for : Car.self){
-//
-//        }
         .tabItem {
             Image(systemName: "mappin.and.ellipse")
             Text("Rides")
@@ -288,8 +274,7 @@ struct RidesView: View {
 
     func checkDrawerVisibility() {
         if !originAddress.isEmpty && !destinationAddress.isEmpty {
-            // Both addresses are filled, show the drawer
-            showDrawer()
+            showDrawer()  // Both addresses are filled, show the drawer
         } else if !originAddress.isEmpty || !destinationAddress.isEmpty {
             // At least one address is filled, keep the drawer hidden but allow it to be reopened
             if !isDrawerVisible {
@@ -303,12 +288,10 @@ struct RidesView: View {
     func hideDrawer() {
         withAnimation(.easeInOut(duration: 0.3)) {
             isDrawerVisible = false
-            // Drawer position so that only the capsule is visible
-            drawerOffset = UIScreen.main.bounds.height * 0.38
+            drawerOffset = UIScreen.main.bounds.height * 0.38  // Only capsule visible
         }
     }
 
-    // Function to calculate route to destination
     func calculateRouteToDestination() {
         guard let userLocation = locationManager.userLocation else { return }
 
@@ -335,7 +318,6 @@ struct RidesView: View {
             }
         }
     }
-    
 }
 
 class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
