@@ -17,6 +17,7 @@ struct RentalDateView: View {
     @State private var isPickupSelected = true
 
     var carModel: CarDetails
+    @Binding var navigationPath: NavigationPath // Add this binding
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -119,7 +120,7 @@ struct RentalDateView: View {
                         Spacer()
                         
                         NavigationLink(
-                            destination: RentalCheckoutView(carModel: carModel, pickupDate: pickupDate, dropoffDate: dropoffDate)
+                            destination: RentalCheckoutView(carModel: carModel, pickupDate: pickupDate, dropoffDate: dropoffDate, navigationPath: $navigationPath)
                                 .navigationBarBackButtonHidden(true)
                                 .toolbar(.hidden, for: .tabBar)
                         ) {

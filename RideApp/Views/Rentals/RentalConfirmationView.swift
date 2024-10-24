@@ -83,6 +83,7 @@ struct RentalConfirmationView: View {
     }
     
     var totalCost: Double
+    @Binding var navigationPath: NavigationPath // Add this binding
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -112,11 +113,10 @@ struct RentalConfirmationView: View {
                     
                     Spacer()
                     VStack {
-                        NavigationLink(
-                            destination: ContentView()
-                                .navigationBarBackButtonHidden(true)
-                                .toolbar(.hidden, for: .tabBar)
-                        ) {
+                        Button(action: {
+                            navigationPath = NavigationPath()
+
+                        }) {
                             Text("Continue")
                                 .font(.system(size: 16))
                                 .foregroundColor(.black)

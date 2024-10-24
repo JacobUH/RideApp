@@ -23,6 +23,7 @@ struct ContentView: View {
             TabView{
                 HomeView()
                 RidesView()
+                    .environment(\.colorScheme, .dark)
                 RentalsView()
                 AccountView()
             }
