@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct LandingView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?

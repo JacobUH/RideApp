@@ -6,18 +6,50 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct SignUpFormView: View {
+    
+    @State private var firstname = ""
+    @State private var lastname = ""
+    @State private var email = ""
+    @State private var password = ""
+    @State private var navigateToHome = false
+    
+    private let db = Firestore.firestore() // Firestore instance
+    
+    func register() {
+        Auth.auth().createUser(withEmail: email, password: password) { result, error in
+            if let error = error {
+                print(error.localizedDescription)
+            } else if let user = result?.user {
+                // Save the first name and last name in Firestore
+                db.collection("users").document(user.uid).setData([
+                    "firstName": firstname,
+                    "lastName": lastname,
+                    "email": email
+                ]) { error in
+                    if let error = error {
+                        print("Error saving user data: \(error.localizedDescription)")
+                    } else {
+                        print("User data saved successfully")
+                        navigateToHome = true
+                    }
+                }
+            }
+        }
+    }
+    
     var body: some View {
         VStack {
-            
             // fname
             ZStack() {
                 Text("First Name")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -137, y: -40)
-                TextField("", text: .constant(""))
+                TextField("", text: $firstname)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -34,7 +66,7 @@ struct SignUpFormView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -137, y: -40)
-                TextField("", text: .constant(""))
+                TextField("", text: $lastname)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -51,7 +83,7 @@ struct SignUpFormView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -155, y: -40)
-                TextField("", text: .constant(""))
+                TextField("", text: $email)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -68,7 +100,7 @@ struct SignUpFormView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -140, y: -40)
-                SecureField("", text: .constant(""))
+                SecureField("", text: $password)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -79,17 +111,21 @@ struct SignUpFormView: View {
             .frame(width: 349, height: 72)
             .padding(.vertical, 5)
             
-            Button(action: {
-                // do something here
-            }) {
-                Text("Sign Up")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, maxHeight: 50)
-                    .background(Color(hex: "4FA0FF"))
-                    .cornerRadius(5)
-                    .padding(.horizontal)
-            }
+            NavigationLink(destination: ContentView()
+                .navigationBarBackButtonHidden(true),
+                isActive: $navigateToHome) {
+                    Button(action: {
+                        register()
+                    }) {
+                        Text("Sign Up")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: 50)
+                            .background(Color(hex: "4FA0FF"))
+                            .cornerRadius(5)
+                            .padding(.horizontal)
+                    }
+                }
         }
     }
 }
