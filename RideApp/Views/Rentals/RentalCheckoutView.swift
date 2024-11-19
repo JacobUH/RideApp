@@ -6,16 +6,71 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct RentalCheckoutView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.presentationMode) var presentationMode
 
+    private let db = Firestore.firestore() // Firestore instance
+
     var carModel: CarDetails
     var pickupDate: Date
     var dropoffDate: Date
     @Binding var navigationPath: NavigationPath // Add this binding
+    @State private var navigateToConfirmation = false
+    @State private var errorMessage = ""
+    
+    func saveRentalDetails(carModel: CarDetails, image: String, pickupDate: Date, dropoffDate: Date, totalCost: Double) {
+        guard let currentUser = Auth.auth().currentUser else {
+            errorMessage = "No authenticated user found. Please log in first."
+            return
+        }
+
+        // Convert the CarDetails object to a dictionary
+        let carModelData: [String: Any] = [
+            "carName": carModel.carName,
+            "carType": carModel.carType,
+            "interior": carModel.interior,
+            "exterior": carModel.exterior,
+            "engine": carModel.engine,
+            "horsepower": carModel.horsepower,
+            "mileage": carModel.mileage,
+            "transmission": carModel.transmission,
+            "driveType": carModel.driveType,
+            "features": [
+                "entertainment": carModel.features.entertainment,
+                "convenience": carModel.features.convenience,
+                "packages": carModel.features.packages
+            ],
+            "images": carModel.images,
+            "dailyCost": carModel.dailyCost
+        ]
+
+        // Create the rental data dictionary
+        let rentalData: [String: Any] = [
+            "carModel": carModelData,
+            "image": image,
+            "pickupDate": Timestamp(date: pickupDate),
+            "dropoffDate": Timestamp(date: dropoffDate),
+            "totalCost": totalCost,
+            "userId": currentUser.uid,
+            "userEmail": currentUser.email ?? "Unknown"
+        ]
+
+        // Save the rental to Firestore
+        db.collection("user_rentals").addDocument(data: rentalData) { error in
+            if let error = error {
+                print("Error saving rental data: \(error.localizedDescription)")
+                errorMessage = "Error saving rental data: \(error.localizedDescription)"
+            } else {
+                print("Rental data saved successfully")
+            }
+        }
+    }
+
     
     var dailyCost: Double {
         let cleanString = carModel.dailyCost.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "")
@@ -172,8 +227,21 @@ struct RentalCheckoutView: View {
                                 navigationPath: $navigationPath
                             )
                             .navigationBarBackButtonHidden(true)
-                            .toolbar(.hidden, for: .tabBar)
+                            .toolbar(.hidden, for: .tabBar),
+                            isActive: $navigateToConfirmation
                         ) {
+                            EmptyView() // Empty view for the NavigationLink
+                        }
+                        Button(action: {
+                            saveRentalDetails(
+                                carModel: carModel,
+                                image: carModel.images[0],
+                                pickupDate: pickupDate,
+                                dropoffDate: dropoffDate,
+                                totalCost: totalCost
+                            )
+                            navigateToConfirmation = true
+                        }) {
                             Text("Confirm Rental Reservation")
                                 .font(.system(size: 16))
                                 .foregroundColor(.black)
@@ -186,6 +254,8 @@ struct RentalCheckoutView: View {
                     .padding(.top, 15)
                     .frame(maxWidth: .infinity)
                     .background(Color(hex: "101011"))
+
+
                 }
                 
                 else if orientation.isLandscape(device: .iPhone) {}
