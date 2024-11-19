@@ -19,8 +19,6 @@ import Firebase
 
 @main
 struct RideApp: App {
-    // Register AppDelegate for Firebase setup
-    //@UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     init() {
         FirebaseApp.configure()
     }

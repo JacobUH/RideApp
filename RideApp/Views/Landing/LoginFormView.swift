@@ -13,12 +13,15 @@ struct LoginFormView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var navigateToHome = false
+    @State private var errorMessage = ""
         
     func login() {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
                 print(error.localizedDescription)
+                errorMessage = "\(error.localizedDescription)"
             } else {
+                print("User signed in successfully")
                 navigateToHome = true
             }
         }
@@ -77,5 +80,14 @@ struct LoginFormView: View {
                     }
                 }
         }
+        .alert(isPresented: .constant(!errorMessage.isEmpty), content: {
+            Alert(
+                title: Text("Login Error"),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("OK"), action: {
+                    errorMessage = ""
+                })
+            )
+        })
     }
 }
