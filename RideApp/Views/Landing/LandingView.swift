@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct LandingView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
@@ -93,7 +94,7 @@ struct LandingView: View {
                         }
                         
                         // Footer
-                        Text("Copyright © 2024 Ride. All rights reserved.\n Created By: Jacob Rangel & Sage Turner")
+                        Text("Copyright © 2024 RIDE. All rights reserved.\n Created By: Jacob Rangel & Sage Turner")
                             .font(.system(size: 10, weight: .bold))
                             .multilineTextAlignment(.center)
                             .foregroundColor(.white)
@@ -122,11 +123,27 @@ struct LandingView: View {
                                 SignUpFormView()
                             }
                         }
-                        
                         .padding()
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(.easeInOut(duration: 0.5), value: showForm)
                         
+                        HStack {
+                            Image(systemName: "chevron.left") // Back arrow icon
+                                .font(.system(size: 13, weight: .heavy))
+                                .foregroundColor(.white)
+                            
+                            Text("Go Back")
+                                .font(.system(size: 15, weight: .heavy))
+                                .foregroundColor(.white)
+                        }
+                        .onTapGesture {
+                            if showForm {
+                                withAnimation {
+                                    showForm = false
+                                }
+                            }
+                        }
+                          
                         Spacer()
                     }
                     .edgesIgnoringSafeArea(.all)

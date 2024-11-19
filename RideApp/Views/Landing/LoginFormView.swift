@@ -6,8 +6,27 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct LoginFormView: View {
+    
+    @State private var email = ""
+    @State private var password = ""
+    @State private var navigateToHome = false
+    @State private var errorMessage = ""
+        
+    func login() {
+        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+            if let error = error {
+                print(error.localizedDescription)
+                errorMessage = "\(error.localizedDescription)"
+            } else {
+                print("User signed in successfully")
+                navigateToHome = true
+            }
+        }
+    }
+    
     var body: some View {
         VStack {
         
@@ -17,7 +36,7 @@ struct LoginFormView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -155, y: -40)
-                TextField("", text: .constant(""))
+                TextField("", text: $email)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -34,7 +53,7 @@ struct LoginFormView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .offset(x: -140, y: -40)
-                SecureField("", text: .constant(""))
+                SecureField("", text: $password)
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
@@ -46,16 +65,29 @@ struct LoginFormView: View {
             .padding(.vertical, 5)
 
             NavigationLink(destination: ContentView()
-                .navigationBarBackButtonHidden(true)
-            ) {
-               Text("Login")
-                   .font(.system(size: 20, weight: .bold))
-                   .foregroundColor(.white)
-                   .frame(maxWidth: .infinity, maxHeight: 50)
-                   .background(Color(hex: "4FA0FF"))
-                   .cornerRadius(5)
-                   .padding(.horizontal)
-           }
+                .navigationBarBackButtonHidden(true),
+                isActive: $navigateToHome) {
+                    Button(action: {
+                        login()
+                    }) {
+                        Text("Login")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: 50)
+                            .background(Color(hex: "4FA0FF"))
+                            .cornerRadius(5)
+                            .padding(.horizontal)
+                    }
+                }
         }
+        .alert(isPresented: .constant(!errorMessage.isEmpty), content: {
+            Alert(
+                title: Text("Login Error"),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("OK"), action: {
+                    errorMessage = ""
+                })
+            )
+        })
     }
 }

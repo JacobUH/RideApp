@@ -6,10 +6,43 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct AccountView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
+    
+    // State variables for user information
+    @State private var firstName = ""
+    @State private var lastName = ""
+    @State private var accountCreatedDate = ""
+    
+    private let db = Firestore.firestore() // Firestore instance
+    
+    private func fetchUserInfo() {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        // Fetching the account creation date from Firebase Auth
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        if let creationDate = user.metadata.creationDate {
+            accountCreatedDate = dateFormatter.string(from: creationDate)
+        } else {
+            accountCreatedDate = "Unknown"
+        }
+        
+        // Fetching first and last names from Firestore
+        db.collection("users").document(user.uid).getDocument { document, error in
+            if let error = error {
+                print("Error fetching user data: \(error.localizedDescription)")
+            } else if let document = document, document.exists {
+                let data = document.data()
+                firstName = data?["firstName"] as? String ?? "Unknown"
+                lastName = data?["lastName"] as? String ?? "User"
+            }
+        }
+    }
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -23,10 +56,10 @@ struct AccountView: View {
                           
                         HStack (alignment: .center, spacing: 20){
                             VStack {
-                                Text("Jacob Rangel")
+                                Text("\(firstName) \(lastName)")
                                     .font(.system(size: 40, weight: .bold))
                                     .foregroundStyle(.white)
-                                Text("Account Created: March 2024")
+                                Text("Account Created: \(accountCreatedDate)")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundStyle(Color(hex: "4FA0FF"))
                             }
@@ -198,8 +231,9 @@ struct AccountView: View {
             Image(systemName: "person.crop.circle.fill")
             Text("Account")
         }
-        
-        
+        .onAppear {
+            fetchUserInfo()
+        }
     }
 }
 
