@@ -13,7 +13,8 @@ struct RidesView: View {
         UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass:
         UserInterfaceSizeClass?
-
+    @StateObject private var locationSearchVM: LocationSearchViewModel =
+        LocationSearchViewModel()
     @StateObject private var locationManager = LocationManager()
     @State private var searchCompleter = MKLocalSearchCompleter()
     @State private var searchResults = [SearchResult]()
@@ -69,19 +70,22 @@ struct RidesView: View {
 
                             ZStack(alignment: .top) {
                                 RouteMapView(region: $region, route: $route)
-                                    .frame(maxWidth: .infinity, maxHeight: 700)
+                                    .frame(maxWidth: .infinity, maxHeight: 720)
                                     .edgesIgnoringSafeArea(.all)
                                     .padding(.vertical, 16)
 
                                 VStack {
-                                    TextField(
-                                        "",
-                                        text: $destinationAddress,
-                                        prompt: Text(
-                                            "\(Image(systemName: "magnifyingglass")) Where To?"
-                                        )
-                                        .foregroundStyle(.white)
+
+                                    Text(
+                                        "\(Image(systemName: "magnifyingglass")) Where To?"
                                     )
+                                    .onTapGesture {
+
+                                        navigationPath.append("locationSearch")
+
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: 25)
+                                    .foregroundStyle(.white)
                                     .padding(20)
                                     .background(
                                         Color(hex: "303033").opacity(0.8)
@@ -91,12 +95,6 @@ struct RidesView: View {
                                     .padding(.top, 10)
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
-                                    .autocorrectionDisabled()
-                                    .onChange(of: destinationAddress) {
-                                        newValue in
-                                        searchCompleter.queryFragment = newValue
-                                        checkDrawerVisibility()
-                                    }
                                 }
                                 .padding(.top, 15)
                             }
@@ -142,7 +140,7 @@ struct RidesView: View {
                             .foregroundColor(.gray)
                             .padding(.top, 8)
 
-                        VStack(alignment: .leading)  {
+                        VStack(alignment: .leading) {
                             HStack(spacing: 40) {
                                 VStack(alignment: .leading) {
                                     Text("From")
@@ -185,13 +183,25 @@ struct RidesView: View {
                                                 .frame(width: 250, height: 142)
                                             ZStack {
                                                 Text(car.carName)
-                                                    .font(Font.custom("SF Pro", size: 12))
+                                                    .font(
+                                                        Font.custom(
+                                                            "SF Pro", size: 12)
+                                                    )
                                                     .foregroundColor(.white)
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                                Text("\(DateFormatter.localizedString(from: Calendar.current.date(byAdding: .minute, value: 10, to: Date())!, dateStyle: .none, timeStyle: .short)) • 10 min")
-                                                    .font(Font.custom("SF Pro", size: 12))
-                                                    .foregroundColor(.white)
-                                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                                    .frame(
+                                                        maxWidth: .infinity,
+                                                        alignment: .leading)
+                                                Text(
+                                                    "\(DateFormatter.localizedString(from: Calendar.current.date(byAdding: .minute, value: 10, to: Date())!, dateStyle: .none, timeStyle: .short)) • 10 min"
+                                                )
+                                                .font(
+                                                    Font.custom(
+                                                        "SF Pro", size: 12)
+                                                )
+                                                .foregroundColor(.white)
+                                                .frame(
+                                                    maxWidth: .infinity,
+                                                    alignment: .trailing)
                                             }
                                             .padding(4)
                                         }
@@ -216,7 +226,9 @@ struct RidesView: View {
                                     .background(.blue)
                                     .cornerRadius(20)
                                     .padding()
-                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                    .transition(
+                                        .move(edge: .bottom).combined(
+                                            with: .opacity))
                                 }
                             }
                         }
@@ -230,6 +242,17 @@ struct RidesView: View {
                             )
                             .navigationBarBackButtonHidden(true)
                             .toolbar(.hidden, for: .tabBar)
+                        }
+                        .navigationDestination(for: String.self) {
+                            destination in
+                            if destination == "locationSearch" {
+                                RidesLocationSearchView(
+                                    navigationPath: $navigationPath, destinationAddress: $destinationAddress
+                                )
+                                .environmentObject(locationSearchVM)
+                                .navigationBarBackButtonHidden(true)
+
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -284,10 +307,10 @@ struct RidesView: View {
 
                 checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
             }
-            .onChange(of: originAddress) { _ in
+            .onChange(of: originAddress) {
                 checkDrawerVisibility()
             }
-            .onChange(of: destinationAddress) { _ in
+            .onChange(of: destinationAddress) {
                 checkDrawerVisibility()
             }
         }
