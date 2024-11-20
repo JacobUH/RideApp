@@ -2,11 +2,7 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-struct SearchResult: Identifiable {
-    let id = UUID()
-    let title: String
-    let subtitle: String
-}
+
 
 struct RidesView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass:
@@ -17,10 +13,9 @@ struct RidesView: View {
         LocationSearchViewModel()
     @StateObject private var locationManager = LocationManager()
     @State private var searchCompleter = MKLocalSearchCompleter()
-    @State private var searchResults = [SearchResult]()
 
     @State public var destinationAddress: String = ""
-    @State public var originAddress: String = "13418 Misty Orchard Ln"
+    @State public var originAddress: String = ""
     @State public var driveTime: String = "Next Stop?"
     @State private var selectedCar: CarDetails?
     @State private var navigationPath = NavigationPath()
@@ -69,59 +64,60 @@ struct RidesView: View {
                                 .padding(.vertical, 4)
 
                             ZStack(alignment: .top) {
-                                RouteMapView(region: $region, route: $route)
+                                RouteMapView(
+                                    originAddress: $originAddress,
+                                    destinationAddress: $destinationAddress
+                                )
+                                    .environmentObject(locationSearchVM)
                                     .frame(maxWidth: .infinity, maxHeight: 720)
                                     .edgesIgnoringSafeArea(.all)
-                                    .padding(.vertical, 16)
+                                    
 
                                 VStack {
-
-                                    Text(
-                                        "\(Image(systemName: "magnifyingglass")) Where To?"
-                                    )
-                                    .onTapGesture {
-
-                                        navigationPath.append("locationSearch")
-
+                                    if destinationAddress.isEmpty {
+                                        Text(
+                                            "\(Image(systemName: "magnifyingglass")) Where To?"
+                                        )
+                                        .onTapGesture {
+                                            navigationPath.append("locationSearch")
+                                        }
+                                        .frame(maxWidth: .infinity, maxHeight: 25)
+                                        .foregroundStyle(.white)
+                                        .padding(20)
+                                        .background(
+                                            Color(hex: "303033").opacity(0.8)
+                                        )
+                                        .cornerRadius(24)
+                                        .padding(.horizontal, 32)
+                                        .padding(.top, 10)
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
                                     }
-                                    .frame(maxWidth: .infinity, maxHeight: 25)
-                                    .foregroundStyle(.white)
-                                    .padding(20)
-                                    .background(
-                                        Color(hex: "303033").opacity(0.8)
-                                    )
-                                    .cornerRadius(24)
-                                    .padding(.horizontal, 32)
-                                    .padding(.top, 10)
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.center)
+                                    else {
+                                        Text(
+                                            "\(Image(systemName: "magnifyingglass")) \(destinationAddress)"
+                                        )
+                                        .onTapGesture {
+                                            navigationPath.append("locationSearch")
+                                        }
+                                        .frame(maxWidth: .infinity, maxHeight: 25)
+                                        .foregroundStyle(.white)
+                                        .padding(20)
+                                        .background(
+                                            Color(hex: "303033").opacity(0.8)
+                                        )
+                                        .cornerRadius(24)
+                                        .padding(.horizontal, 32)
+                                        .padding(.top, 10)
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                    }
                                 }
                                 .padding(.top, 15)
                             }
                         }
                         .frame(maxHeight: .infinity)
                     }
-                }
-
-                if !searchResults.isEmpty {
-                    List(searchResults) { result in
-                        VStack(alignment: .leading) {
-                            Text(result.title)
-                                .font(.headline)
-                            Text(result.subtitle)
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .onTapGesture {
-                            destinationAddress = result.title
-                            searchResults.removeAll()
-                            calculateRouteToDestination()
-                        }
-                    }
-                    .frame(height: 150)
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal, 32)
                 }
 
                 if isDrawerVisible {
@@ -247,7 +243,9 @@ struct RidesView: View {
                             destination in
                             if destination == "locationSearch" {
                                 RidesLocationSearchView(
-                                    navigationPath: $navigationPath, destinationAddress: $destinationAddress
+                                    navigationPath: $navigationPath,
+                                    originAddress: $originAddress,
+                                    destinationAddress: $destinationAddress
                                 )
                                 .environmentObject(locationSearchVM)
                                 .navigationBarBackButtonHidden(true)
@@ -293,18 +291,6 @@ struct RidesView: View {
             }
             .onAppear {
                 loadCarData()
-                searchCompleter.delegate = SearchCompleterDelegate(
-                    searchResults: $searchResults)
-
-                // Fetch the user's current location
-                region = MKCoordinateRegion(
-                    center: locationManager.userLocation
-                        ?? CLLocationCoordinate2D(
-                            latitude: 29.7295, longitude: -95.3443),
-                    span: MKCoordinateSpan(
-                        latitudeDelta: 0.09, longitudeDelta: 0.09)
-                )
-
                 checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
             }
             .onChange(of: originAddress) {
@@ -348,51 +334,6 @@ struct RidesView: View {
         }
     }
 
-    func calculateRouteToDestination() {
-        guard let userLocation = locationManager.userLocation else { return }
-
-        let request = MKDirections.Request()
-        request.source = MKMapItem(
-            placemark: MKPlacemark(coordinate: userLocation))
-
-        // Geocode destination to get coordinates
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(destinationAddress) { placemarks, error in
-            guard let placemark = placemarks?.first,
-                let destinationLocation = placemark.location
-            else { return }
-
-            request.destination = MKMapItem(
-                placemark: MKPlacemark(
-                    coordinate: destinationLocation.coordinate))
-            request.transportType = .automobile
-
-            let directions = MKDirections(request: request)
-            directions.calculate { response, error in
-                if let route = response?.routes.first {
-                    self.route = route  // Store the route to draw on the map
-                    driveTime = "\(Int(route.expectedTravelTime / 60)) min"
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        showDrawer()
-                    }
-                }
-            }
-        }
-    }
-}
-
-class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
-    @Binding var searchResults: [SearchResult]
-
-    init(searchResults: Binding<[SearchResult]>) {
-        self._searchResults = searchResults
-    }
-
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        self.searchResults = completer.results.map {
-            SearchResult(title: $0.title, subtitle: $0.subtitle)
-        }
-    }
 }
 
 #Preview {

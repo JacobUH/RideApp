@@ -16,8 +16,8 @@ struct RidesLocationSearchView: View {
     @Environment(\.presentationMode) var presentationMode
 
     @EnvironmentObject private var locationSearchVM: LocationSearchViewModel
-    @State private var startLocationText = ""
     @Binding var navigationPath: NavigationPath
+    @Binding var originAddress: String
     @Binding var destinationAddress: String
 
     var body: some View {
@@ -30,14 +30,10 @@ struct RidesLocationSearchView: View {
             if orientation.isPortrait(device: .iPhone) {
                 VStack {
                     HStack {
-                        Spacer()
-                        Text("Where to?")
+                        Text("Where To?")
                             .font(.body)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
-                        Spacer()
-                        Color(hex: "303033")
-                            .frame(width: 40, height: 35)
                     }
 
                     HStack {
@@ -59,7 +55,7 @@ struct RidesLocationSearchView: View {
                         }
                         VStack {
                             TextField(
-                                "Current location", text: $startLocationText
+                                "Current location", text: $originAddress
                             )
                             .frame(height: 32)
                             .foregroundStyle(.white)

@@ -16,7 +16,7 @@ struct HomeView: View {
     @State private var navigationPath = NavigationPath()
     
     @State public var destinationAddress: String = ""
-    @State public var originAddress: String = "13418 Misty Orchard Ln"
+    @State public var originAddress: String = ""
     @State public var driveTime: String = "Next Stop?"
     
     enum CarType: Hashable {
