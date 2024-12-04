@@ -47,7 +47,7 @@ struct RidesSummaryView: View {
             Text("Please stay nearby the specified pickup location.")
                 .font(.system(size: 12, weight: .bold))
 
-            Text("Verify that the car is the same as the ordered ordered one.")
+            Text("Verify that the car is the same \(carModel.carName) shown in the images.")
                 .font(.system(size: 12, weight: .bold))
             
         }

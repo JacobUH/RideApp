@@ -148,8 +148,7 @@ extension RouteMapView {
                     let fullAddress = addressParts.joined(separator: ", ")
 
                     if let name = placemark.name {
-                        self.parent.originAddress =
-                            placemark.name ?? fullAddress
+                        self.parent.originAddress = name
                         self.parent.fullOriginAddress = fullAddress
                         self.parent.onAddressesUpdated?(
                             fullAddress, self.parent.destinationAddress)

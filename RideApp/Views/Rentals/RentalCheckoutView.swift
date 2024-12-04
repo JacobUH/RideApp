@@ -322,7 +322,8 @@ struct RentalCheckoutView: View {
                                     navigationPath: $navigationPath
                                 )
                                 .navigationBarBackButtonHidden(true)
-                                .toolbar(.hidden, for: .tabBar)
+                                .toolbar(.hidden, for: .tabBar),
+                                isActive: $navigateToConfirmation
                             ) {
                                 EmptyView()
                             }
@@ -348,6 +349,7 @@ struct RentalCheckoutView: View {
                                totalCost: totalCost,
                                selectedCard: card
                             )
+                            navigateToConfirmation = true
                         }) {
                             Text("Confirm Rental Reservation")
                                 .font(.system(size: 16))

@@ -15,14 +15,7 @@ struct RidesCheckoutView: View {
     @Environment(\.presentationMode) var presentationMode
     
     private let db = Firestore.firestore()
-    
-    var carModel: CarDetails
-    var origin: String
-    var destination: String
-    var subtotal: Double
-    var distance: Double
-    var arrivalTime: Date
-    @Binding var navigationPath: NavigationPath
+
     
     @State private var showAlert = false
     @State private var errorMessage = ""
@@ -33,6 +26,16 @@ struct RidesCheckoutView: View {
     
     @State private var showAddPayment = false
     @State private var newCard: Card?
+    
+    var carModel: CarDetails
+    var origin: String
+    var destination: String
+    var subtotal: Double
+    var distance: Double
+    var arrivalTime: Date
+    
+    @Binding var navigationPath: NavigationPath
+    @State private var navigateToConfirmation = false
     
     func saveRideDetails(carModel: CarDetails, image: String, arrivalTime: Date, totalCost: Double, selectedCard: Card) {
         guard let currentUser = Auth.auth().currentUser else {
@@ -59,13 +62,23 @@ struct RidesCheckoutView: View {
             "dailyCost": carModel.dailyCost
         ]
         
+        let cardData: [String: Any] = [
+            "cardType": selectedCard.cardType,
+            "cardNumber": "****\(selectedCard.cardNumber.suffix(4))", // Mask the card number
+            "expDate": selectedCard.expDate,
+            "securityPin": "****" // Mask the security PIN for privacy
+        ]
+        
         let rideData: [String: Any] = [
             "carModel": carModelData,
             "image": image,
             "arrivalTime": Timestamp(date: arrivalTime),
             "totalCost": totalCost,
+            "originAddress": origin,
+            "destinationAddress": destination,
             "userId": currentUser.uid,
-            "userEmail": currentUser.email ?? "Unknown"
+            "userEmail": currentUser.email ?? "Unknown",
+            "selectedCard": cardData
         ]
         
         db.collection("user_rides").addDocument(data: rideData) { error in
@@ -231,7 +244,9 @@ struct RidesCheckoutView: View {
                                     navigationPath: $navigationPath
                                 )
                                 .navigationBarBackButtonHidden(true)
-                                .toolbar(.hidden, for: .tabBar)
+                                .toolbar(.hidden, for: .tabBar),
+                                isActive: $navigateToConfirmation
+                                
                             ) {
                                 EmptyView()
                             }
@@ -256,6 +271,7 @@ struct RidesCheckoutView: View {
                                 totalCost: totalCost,
                                 selectedCard: card
                             )
+                            navigateToConfirmation = true
                         }) {
                             Text("Confirm Ride")
                                 .font(.system(size: 16))
