@@ -29,27 +29,37 @@ struct ActivityView: View {
             .whereField("userId", isEqualTo: currentUser.uid)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error fetching rentals: \(error.localizedDescription)")
-                } else {
-                    if let documents = snapshot?.documents {
-                        let rentals = snapshot?.documents.compactMap { doc -> Rental? in
-                            do {
-                                let rental = try doc.data(as: Rental.self)
-                                //print("Decoded rental: \(rental)")  // Log the decoded rental
-                                return rental
-                            } catch {
-                                //print("Error decoding rental: \(error)")  // Log any decoding errors
-                                return nil
-                            }
-                        } ?? []
-
-                        self.rentals = rentals
-                        //print("Fetched rentals: \(self.rentals)")  // Log the rentals array
+//                    print("Error fetching rentals: \(error.localizedDescription)")
+                } else if let documents = snapshot?.documents {
+//                    print("Fetched \(documents.count) rentals for user: \(currentUser.uid)")
+                    
+                    documents.forEach { document in
+//                        print("Rental Document ID: \(document.documentID), Data: \(document.data())")
                     }
+                    
+                    let rentals = documents.compactMap { doc -> Rental? in
+                        do {
+                            let rental = try doc.data(as: Rental.self)
+//                            print("Decoded Rental: \(rental)") // Log each decoded rental
+                            return rental
+                        } catch let decodingError {
+                            // Log the full error object and associated info
+//                            print("Error decoding rental: \(decodingError.localizedDescription)")
+//                            print("Error details: \(decodingError)")  // This will print more detailed information about the decoding error
+                            return nil
+                        }
+                    }
+                    
+                    self.rentals = rentals
+//                    print("Updated Rentals Array: \(rentals)")
+                } else {
+//                    print("No rentals found for user: \(currentUser.uid)")
                 }
                 self.isLoading = false
             }
     }
+
+
 
 
     var body: some View {
@@ -100,15 +110,12 @@ struct ActivityView: View {
                                         // Append the entire rental object to the navigation path
                                         navigationPath.append(rental)
                                     }) {
-                                        ActivityCard(
-                                            CarName: rental.carModel.carName,
-                                            imageName: rental.image,
-                                            pickupDate: rental.pickupDate,
-                                            dropoffDate: rental.dropoffDate,
-                                            totalCost: String(format: "$%.2f", rental.totalCost)
-                                        )
+                                        ActivityCard(CarData: rental)
                                         .padding(.bottom, 10)
                                     }
+                                }
+                                .onDelete{ IndexSet in
+                                    
                                 }
                             }
                             .padding(.top, 20)
@@ -124,6 +131,7 @@ struct ActivityView: View {
                         pickupDate: rental.pickupDate,
                         dropoffDate: rental.dropoffDate,
                         totalCost: rental.totalCost,
+                        selectedCard: rental.selectedCard,
                         navigationPath: $navigationPath
                     )
                     .navigationBarBackButtonHidden(true)

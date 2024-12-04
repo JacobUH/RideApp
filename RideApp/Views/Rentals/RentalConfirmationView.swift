@@ -12,19 +12,38 @@ struct OrderSummaryView: View {
     var pickup: String
     var dropoff: String
     var totalCost: Double
-    
+    var selectedCard: Card
+
     var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                headerSection
+                
+                vehicleDetailsSection
+                
+                paymentDetailsSection
+                
+                nextStepsSection
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    private var headerSection: some View {
+        Text("Order Summary")
+            .font(.system(size: 24, weight: .bold))
+            .foregroundStyle(.white)
+            .padding([.top, .bottom], 5)
+    }
+    
+    private var vehicleDetailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Order Summary")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(.white)
-                .padding([.top, .bottom], 5)
-            
             Text("Vehicle:\n" + carModel.carName)
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
             
-            Text("Pickup Location:\n" + "Ride Plaza, 1500 Velocity Drive, Houston, TX 77002")
+            Text("Pickup Location:\nRide Plaza, 1500 Velocity Drive, Houston, TX 77002")
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
             
@@ -35,15 +54,24 @@ struct OrderSummaryView: View {
             Text("Dropoff Date:\n" + dropoff)
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
-
-            Text("Total Amount:\n" + "$" + String(totalCost) + " ~ " + "Apple Pay")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.white)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, 20)
-        
+    }
+    
+    private var paymentDetailsSection: some View {
+        Group {
+            if selectedCard.cardType == "Apple Pay" {
+                Text("Total Amount:\n$\(String(format: "%.2f", totalCost)) ~ \(selectedCard.cardType)")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            } else {
+                Text("Total Amount:\n$\(String(format: "%.2f", totalCost)) ~ \(selectedCard.cardType) \(selectedCard.cardNumber)")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+        }
+    }
+    
+    private var nextStepsSection: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("What's Next")
                 .font(.system(size: 24, weight: .bold))
@@ -54,18 +82,11 @@ struct OrderSummaryView: View {
             Text("You’ll receive a reminder 24 hours before your pickup.")
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
-
+            
             Text("Please arrive at Ride Plaza at your scheduled time.")
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
-
-            Text("Bring your valid ID for a smooth handoff.")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.white)
-            
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
     }
 }
 
@@ -93,6 +114,7 @@ struct RentalConfirmationView: View {
     }
     
     var totalCost: Double
+    var selectedCard: Card
     @Binding var navigationPath: NavigationPath // Add this binding
 
     var body: some View {
@@ -112,6 +134,7 @@ struct RentalConfirmationView: View {
                     
                     Image(carModel.images[0])
                         .resizable()
+                        .frame(height: 200)
                         .padding(.horizontal)
                         .padding(.top, 15)
                     
@@ -120,7 +143,7 @@ struct RentalConfirmationView: View {
                         .foregroundStyle(.white)
                         .padding(.all)
                     
-                    OrderSummaryView(carModel: carModel, pickup: pickup, dropoff: dropoff, totalCost: totalCost)
+                    OrderSummaryView(carModel: carModel, pickup: pickup, dropoff: dropoff, totalCost: totalCost, selectedCard: selectedCard)
                     
                     Spacer()
                     VStack {
