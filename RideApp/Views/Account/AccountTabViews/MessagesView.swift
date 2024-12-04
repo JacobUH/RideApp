@@ -37,7 +37,6 @@ struct MessagesView: View {
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundStyle(.white)
                         }
-                        
                         .padding(.vertical, 20)
                         .frame(maxWidth: .infinity)
                         .foregroundColor(.clear)
@@ -49,7 +48,10 @@ struct MessagesView: View {
                         // content
                         VStack {
                             ScrollView {
-                                
+                                Text("Feature Coming Soon.")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.top, 300)
                             }
                         }
                         

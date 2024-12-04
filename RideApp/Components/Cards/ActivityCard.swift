@@ -8,11 +8,7 @@
 import SwiftUI
 
 struct ActivityCard: View {
-    let CarName: String
-    let imageName: String
-    let pickupDate: Date
-    let dropoffDate: Date
-    let totalCost: String
+    let CarData: Rental
     
     var body: some View {
         
@@ -20,8 +16,8 @@ struct ActivityCard: View {
         dateFormatter.dateFormat = "MMM dd"  // Month (full name) and day, e.g., "September 25"
         
         // Convert pickupDate and dropoffDate to string within the body
-        let pickupDateString = dateFormatter.string(from: pickupDate)
-        let dropoffDateString = dateFormatter.string(from: dropoffDate)
+        let pickupDateString = dateFormatter.string(from: CarData.pickupDate)
+        let dropoffDateString = dateFormatter.string(from: CarData.dropoffDate)
         
         return ZStack {
             VStack(alignment: .leading, spacing: 0) {
@@ -38,27 +34,26 @@ struct ActivityCard: View {
                             .padding(.leading, 10)
 
                         Spacer()
-                        Text(CarName)
+                        Text(CarData.carModel.carName)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
-                        Text("CarExterior")
+                        Text(CarData.carModel.exterior)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
                         Spacer()
-                        Text(totalCost + " ~ " + "Apple Pay")
+                        Text("$\(String(format: "%.2f", CarData.totalCost)) ~ \(CarData.selectedCard.cardType)")
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
-                        
                     }
                     
                     Spacer()
-                    Image(imageName)
+                    Image(CarData.carModel.images[0])
                         .resizable()
                         .frame(width: 180, height: 113)
                         .padding(.trailing, 10)

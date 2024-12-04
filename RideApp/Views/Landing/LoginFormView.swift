@@ -29,7 +29,6 @@ struct LoginFormView: View {
     
     var body: some View {
         VStack {
-        
             // email
             ZStack() {
                 Text("Email")

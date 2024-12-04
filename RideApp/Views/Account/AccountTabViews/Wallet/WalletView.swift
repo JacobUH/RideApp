@@ -21,7 +21,6 @@ struct WalletView: View {
     @State private var userCards: [Card] = [] // Where `Card` is a custom model for wallet data
     
     @State private var selectedCard: Card?
-    @State private var showCardSheet = false
 
     func fetchUserCards() {
         guard let currentUser = Auth.auth().currentUser else {
@@ -119,7 +118,6 @@ struct WalletView: View {
                             ForEach(userCards) { card in
                                 Button(action: {
                                     selectedCard = card
-                                    showCardSheet = true
                                 }) {
                                     CardRow(
                                         cardType: card.cardType,
@@ -137,7 +135,6 @@ struct WalletView: View {
                                     expDate: "",
                                     securityPin: ""
                                 )
-                                showCardSheet = true
                             }) {
                                 AddRow(label: "Add Payment Method")
                             }

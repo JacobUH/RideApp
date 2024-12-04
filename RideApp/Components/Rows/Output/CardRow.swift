@@ -8,6 +8,35 @@
 
 import SwiftUI
 
+struct CardCheckout: View {
+    let cardType: String
+    let cardNumber: String
+    let expDate: String
+    let securityPin: String
+
+    var body: some View {
+        HStack {
+            if !cardType.isEmpty {
+                Image(cardType)
+                    .frame(width: 50)
+                    .padding(.leading)
+            }
+            Text((!cardType.isEmpty && !cardNumber.isEmpty) ?
+                 (cardType != "Apple Pay" ? "\(cardType)   ****\(cardNumber.suffix(4))" : cardType) :
+                 "No Card Selected")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.leading, cardType.isEmpty ? 25 : 0)
+            Spacer()
+            Image(systemName: "chevron.forward")
+                .foregroundColor(Color.gray)
+                .padding(.trailing, 25)
+        }
+        .padding(.bottom, 20)
+    }
+}
+
+
 struct CardRow: View {
     let cardType: String
     let cardNumber: String

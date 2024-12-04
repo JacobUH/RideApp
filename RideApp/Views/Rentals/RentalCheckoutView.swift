@@ -15,15 +15,31 @@ struct RentalCheckoutView: View {
     @Environment(\.presentationMode) var presentationMode
 
     private let db = Firestore.firestore() // Firestore instance
+    @State private var showAlert = false
+    @State private var errorMessage = ""
+
+    @State private var userCards: [Card] = []
+    @State private var selectedCard: Card?
+    @State private var showCardPicker = false
+    
+    @State private var showAddPayment = false
+    @State private var newCard: Card?
 
     var carModel: CarDetails
     var pickupDate: Date
     var dropoffDate: Date
-    @Binding var navigationPath: NavigationPath // Add this binding
-//    @State private var navigateToConfirmation = false
-    @State private var errorMessage = ""
     
-    func saveRentalDetails(carModel: CarDetails, image: String, pickupDate: Date, dropoffDate: Date, totalCost: Double) {
+    @Binding var navigationPath: NavigationPath // Add this binding
+    @State private var navigateToConfirmation = false
+    
+    
+    func saveRentalDetails(
+        carModel: CarDetails,
+        pickupDate: Date,
+        dropoffDate: Date,
+        totalCost: Double,
+        selectedCard: Card
+    ) {
         guard let currentUser = Auth.auth().currentUser else {
             errorMessage = "No authenticated user found. Please log in first."
             return
@@ -49,15 +65,23 @@ struct RentalCheckoutView: View {
             "dailyCost": carModel.dailyCost
         ]
 
+        // Add the selected card details to the rental data dictionary
+        let cardData: [String: Any] = [
+            "cardType": selectedCard.cardType,
+            "cardNumber": "****\(selectedCard.cardNumber.suffix(4))", // Mask the card number
+            "expDate": selectedCard.expDate,
+            "securityPin": "****" // Mask the security PIN for privacy
+        ]
+
         // Create the rental data dictionary
         let rentalData: [String: Any] = [
             "carModel": carModelData,
-            "image": image,
             "pickupDate": Timestamp(date: pickupDate),
             "dropoffDate": Timestamp(date: dropoffDate),
             "totalCost": totalCost,
             "userId": currentUser.uid,
-            "userEmail": currentUser.email ?? "Unknown"
+            "userEmail": currentUser.email ?? "Unknown",
+            "selectedCard": cardData
         ]
 
         // Save the rental to Firestore
@@ -69,6 +93,37 @@ struct RentalCheckoutView: View {
                 print("Rental data saved successfully")
             }
         }
+    }
+
+    
+    func fetchUserCards() {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("No authenticated user found.")
+            return
+        }
+
+        db.collection("user_wallets")
+            .whereField("userId", isEqualTo: currentUser.uid)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching cards: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    print("No cards found for the user.")
+                    return
+                }
+
+                self.userCards = documents.compactMap { doc in
+                    do {
+                        return try doc.data(as: Card.self)
+                    } catch {
+                        print("Error decoding card data: \(error)")
+                        return nil
+                    }
+                }
+            }
     }
 
     
@@ -218,26 +273,81 @@ struct RentalCheckoutView: View {
                     Spacer()
                     
                     VStack {
-                        NavigationLink(
-                            destination: RentalConfirmationView(
-                                carModel: carModel,
-                                pickupDate: pickupDate,
-                                dropoffDate: dropoffDate,
-                                totalCost: totalCost,
-                                navigationPath: $navigationPath
-                            )
-                            .navigationBarBackButtonHidden(true)
-                            .toolbar(.hidden, for: .tabBar)
-                        ) {
-                            EmptyView() // Empty view for the NavigationLink
+                        // Display the selected card (or first card if none selected)
+                        if let card = selectedCard ?? userCards.first {
+                            Button(action: {
+                                showCardPicker = true // Show the card picker sheet when clicked
+                            }) {
+                                CardCheckout(
+                                    cardType: card.cardType,
+                                    cardNumber: card.cardNumber,
+                                    expDate: card.expDate,
+                                    securityPin: card.securityPin
+                                )
+                            }
+                        } else {
+                            // No cards available, show "Add Payment Method" button
+                            Button(action: {
+                                selectedCard = Card(
+                                    id: nil,
+                                    cardNumber: "",
+                                    cardType: "",
+                                    expDate: "",
+                                    securityPin: ""
+                                )
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    showCardPicker = true
+                                    showAddPayment = true
+                                }
+                            }) {
+                                AddRow(label: "Add Payment Method")
+                            }
                         }
+                        
+                        if let card = selectedCard ?? userCards.first {
+                            let cardFormatted = Card(
+                                cardNumber: "****\(card.cardNumber.suffix(4))",
+                                cardType: card.cardType,
+                                expDate: card.expDate,
+                                securityPin: "****"
+                            )
+                            
+                            NavigationLink(
+                                destination: RentalConfirmationView(
+                                    carModel: carModel,
+                                    pickupDate: pickupDate,
+                                    dropoffDate: dropoffDate,
+                                    totalCost: totalCost,
+                                    selectedCard: cardFormatted,
+                                    navigationPath: $navigationPath
+                                )
+                                .navigationBarBackButtonHidden(true)
+                                .toolbar(.hidden, for: .tabBar),
+                                isActive: $navigateToConfirmation
+                            ) {
+                                EmptyView()
+                            }
+                        }
+
                         Button(action: {
+                            guard let card = selectedCard ?? userCards.first else {
+                                errorMessage = "Please select a card before confirming."
+                                showAlert = true
+                                return
+                            }
+                            
+                            if card.cardType.isEmpty || card.cardNumber.isEmpty {
+                                errorMessage = "The selected card is incomplete. Please choose a valid card or add a new one."
+                                showAlert = true
+                                return
+                            }
+                            
                             saveRentalDetails(
-                                carModel: carModel,
-                                image: carModel.images[0],
-                                pickupDate: pickupDate,
-                                dropoffDate: dropoffDate,
-                                totalCost: totalCost
+                               carModel: carModel,
+                               pickupDate: pickupDate,
+                               dropoffDate: dropoffDate,
+                               totalCost: totalCost,
+                               selectedCard: card
                             )
                         }) {
                             Text("Confirm Rental Reservation")
@@ -248,17 +358,78 @@ struct RentalCheckoutView: View {
                                 .cornerRadius(5)
                                 .padding(.horizontal, 25)
                         }
+                        .alert(isPresented: $showAlert) {
+                            Alert(
+                                title: Text("Error"),
+                                message: Text(errorMessage),
+                                dismissButton: .default(Text("OK"))
+                            )
+                        }
                     }
                     .padding(.top, 15)
                     .frame(maxWidth: .infinity)
                     .background(Color(hex: "101011"))
-
-
                 }
                 
                 else if orientation.isLandscape(device: .iPhone) {}
             }
         }
+        .onAppear{
+            fetchUserCards()
+        }
+
+        .sheet(isPresented: $showCardPicker) {
+            ZStack {
+                Color(hex:"101011")
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    SectionHeader(title: "Payment Methods")
+                    
+                    ForEach(userCards, id: \.id) { card in
+                        Button(action: {
+                            selectedCard = card
+                            showCardPicker = false
+                        }) {
+                            CardRow(
+                                cardType: card.cardType,
+                                cardNumber: card.cardNumber,
+                                expDate: card.expDate,
+                                securityPin: card.securityPin
+                            )
+                        }
+                    }
+                    
+                    Button(action: {
+                        selectedCard = Card(
+                            id: nil,
+                            cardNumber: "",
+                            cardType: "",
+                            expDate: "",
+                            securityPin: ""
+                        )
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                           showAddPayment = true
+                       }
+                    }) {
+                        AddRow(label: "Add Payment Method")
+                    }
+                }
+                .cornerRadius(12)
+            }
+            .presentationDetents([.height(250)])
+            
+            .sheet(isPresented: $showAddPayment) {
+                if let card = selectedCard {
+                    CardDetailsSheet(card: card)
+                        .environment(\.colorScheme, .dark)
+                        .onDisappear {
+                            fetchUserCards()
+                        }
+                }
+            }
+        }
+        
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
