@@ -11,8 +11,6 @@ import FirebaseFirestore
 
 struct SignUpFormView: View {
     
-    
-    
     @State private var firstname = ""
     @State private var lastname = ""
     @State private var email = ""
@@ -55,7 +53,9 @@ struct SignUpFormView: View {
                 db.collection("users").document(user.uid).setData([
                     "firstName": firstname,
                     "lastName": lastname,
-                    "email": email
+                    "email": email,
+                    "phone" : "~",
+                    "gender" : "",
                 ]) { error in
                     if let error = error {
                         print(error.localizedDescription)

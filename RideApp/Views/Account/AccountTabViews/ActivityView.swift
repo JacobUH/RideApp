@@ -32,7 +32,6 @@ struct ActivityView: View {
                     print("Error fetching rentals: \(error.localizedDescription)")
                 } else {
                     if let documents = snapshot?.documents {
-                        print("Fetched documents: \(documents)")  // Log the fetched documents
                         let rentals = snapshot?.documents.compactMap { doc -> Rental? in
                             do {
                                 let rental = try doc.data(as: Rental.self)
@@ -93,6 +92,7 @@ struct ActivityView: View {
                         } else if rentals.isEmpty {
                             Text("No rentals found")
                                 .foregroundColor(.white)
+                            Spacer()
                         } else {
                             ScrollView {
                                 ForEach(rentals) { rental in
