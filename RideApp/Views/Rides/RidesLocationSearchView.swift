@@ -86,8 +86,7 @@ struct RidesLocationSearchView: View {
                     Divider()
                     ScrollView {
                         VStack(alignment: .leading) {
-                            ForEach(locationSearchVM.results, id: \.self) {
-                                result in
+                            ForEach(locationSearchVM.results.filter {$0.subtitle != "Search Nearby"}, id: \.self) {                                result in
                                 LocationSearchResultCell(
                                     title: result.title,
                                     subtitle: result.subtitle
