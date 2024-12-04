@@ -13,7 +13,7 @@ struct ActivityFilterView: View {
     @Binding var selectedTimeFrame: String
     @Binding var selectedRentalType: String
 
-    let rentalTypes: [String] = ["All", "Renal", "Ride"]
+    let rentalTypes: [String] = ["All", "Rental", "Ride"]
     let carTypes: [String] = ["All", "Sedan", "SUV", "Truck", "Coupe"]
     let timeFrames: [String] = ["All", "Today", "Yesterday", "Last Week", "Last Month"]
 

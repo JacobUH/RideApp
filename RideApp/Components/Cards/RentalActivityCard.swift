@@ -1,13 +1,13 @@
 //
-//  ActivityCard.swift
+//  RentalActivityCard.swift
 //  RideApp
 //
-//  Created by Jacob Rangel on 11/18/24.
+//  Created by Sage Turner on 12/4/24.
 //
 
 import SwiftUI
 
-struct ActivityCard: View {
+struct RentalActivityCard: View {
     let CarData: Rental
     
     var body: some View {

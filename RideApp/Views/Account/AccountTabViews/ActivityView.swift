@@ -26,6 +26,7 @@ struct ActivityView: View {
         title: "Most Recent")
     @State private var selectedCarType: String = "All"
     @State private var selectedTimeFrame: String = "All"
+    @State private var selectedRentalType: String = "All"
 
     @State private var navigationPath = NavigationPath()
 
@@ -160,6 +161,10 @@ struct ActivityView: View {
             }
     }
 
+    func applyFilters() {
+
+    }
+
     var body: some View {
         let orientation = DeviceHelper(
             widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
@@ -239,18 +244,41 @@ struct ActivityView: View {
                         } else {
 
                             ScrollView {
+                                Text("Rentals")
+                                    .font(.headline)
+                                    .padding(.horizontal)
+                                    .background(Color.gray.opacity(0.2))
+
                                 ForEach(rentals) { rental in
                                     Button(action: {
                                         // Append the entire rental object to the navigation path
                                         navigationPath.append(rental)
                                     }) {
-                                        ActivityCard(CarData: rental)
+                                        RentalActivityCard(CarData: rental)
                                             .padding(.bottom, 10)
                                     }
                                 }
                                 .onDelete { IndexSet in
 
                                 }
+                                
+                                Text("Rides")
+                                    .font(.headline)
+                                    .padding(.horizontal)
+                                    .background(Color.gray.opacity(0.2))
+                                ForEach(rides) { ride in
+                                    Button(action: {
+                                        // Append the entire ride object to the navigation path
+                                        navigationPath.append(ride)
+                                    }) {
+                                        RidesActivityCard(CarData: ride)
+                                            .padding(.bottom, 10)
+                                    }
+                                }
+                                .onDelete { IndexSet in
+
+                                }
+
                             }
                             .padding(.top, 20)
 
@@ -271,7 +299,7 @@ struct ActivityView: View {
                     .navigationBarBackButtonHidden(true)
                     .toolbar(.hidden, for: .tabBar)
                 }
-                .navigationDestination(for: Ride.self) {ride in
+                .navigationDestination(for: Ride.self) { ride in
                     RidesConfirmationView(
                         carModel: ride.carModel,
                         destination: ride.destination,
@@ -300,7 +328,8 @@ struct ActivityView: View {
         .sheet(isPresented: $showingFilterView) {
             ActivityFilterView(
                 selectedCarType: $selectedCarType,
-                selectedTimeFrame: $selectedTimeFrame
+                selectedTimeFrame: $selectedTimeFrame,
+                selectedRentalType: $selectedRentalType
             )
             .environment(\.colorScheme, .dark)
         }
