@@ -20,7 +20,7 @@ struct RentalCheckoutView: View {
     var pickupDate: Date
     var dropoffDate: Date
     @Binding var navigationPath: NavigationPath // Add this binding
-    @State private var navigateToConfirmation = false
+//    @State private var navigateToConfirmation = false
     @State private var errorMessage = ""
     
     func saveRentalDetails(carModel: CarDetails, image: String, pickupDate: Date, dropoffDate: Date, totalCost: Double) {
@@ -227,8 +227,7 @@ struct RentalCheckoutView: View {
                                 navigationPath: $navigationPath
                             )
                             .navigationBarBackButtonHidden(true)
-                            .toolbar(.hidden, for: .tabBar),
-                            isActive: $navigateToConfirmation
+                            .toolbar(.hidden, for: .tabBar)
                         ) {
                             EmptyView() // Empty view for the NavigationLink
                         }
@@ -240,7 +239,6 @@ struct RentalCheckoutView: View {
                                 dropoffDate: dropoffDate,
                                 totalCost: totalCost
                             )
-                            navigateToConfirmation = true
                         }) {
                             Text("Confirm Rental Reservation")
                                 .font(.system(size: 16))

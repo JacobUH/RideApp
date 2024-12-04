@@ -6,17 +6,71 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct RidesCheckoutView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.presentationMode) var presentationMode
 
+    private let db = Firestore.firestore()
+    
     var carModel: CarDetails
     var origin: String
     var destination: String
     var subtotal: Double
+    var arrivalTime: Date
     @Binding var navigationPath: NavigationPath
+    @State private var navigateToConfirmation: Bool = false
+    @State private var errorMessage = ""
+    
+    func saveRideDetails(carModel: CarDetails, image: String, arrivalTime: String, totalCost: Double) {
+        guard let currentUser = Auth.auth().currentUser else {
+            errorMessage = "No authenticated user found. Please log in first."
+            return
+        }
+
+        // Convert the CarDetails object to a dictionary
+        let carModelData: [String: Any] = [
+            "carName": carModel.carName,
+            "carType": carModel.carType,
+            "interior": carModel.interior,
+            "exterior": carModel.exterior,
+            "engine": carModel.engine,
+            "horsepower": carModel.horsepower,
+            "mileage": carModel.mileage,
+            "transmission": carModel.transmission,
+            "driveType": carModel.driveType,
+            "features": [
+                "entertainment": carModel.features.entertainment,
+                "convenience": carModel.features.convenience,
+                "packages": carModel.features.packages
+            ],
+            "images": carModel.images,
+            "dailyCost": carModel.dailyCost
+        ]
+
+        // Create the rental data dictionary
+        let rideData: [String: Any] = [
+            "carModel": carModelData,
+            "image": image,
+            "arrivalTime": arrivalTime,
+            "totalCost": totalCost,
+            "userId": currentUser.uid,
+            "userEmail": currentUser.email ?? "Unknown"
+        ]
+
+        // Save the rental to Firestore
+        db.collection("user_rides").addDocument(data: rideData) { error in
+            if let error = error {
+                print("Error saving ride data: \(error.localizedDescription)")
+                errorMessage = "Error saving ride data: \(error.localizedDescription)"
+            } else {
+                print("Ride data saved successfully")
+            }
+        }
+    }
     
     var numberOfMiles: Double = 10
     
@@ -162,6 +216,15 @@ struct RidesCheckoutView: View {
                             .navigationBarBackButtonHidden(true)
                             .toolbar(.hidden, for: .tabBar)
                         ) {
+                            Button(action: {
+                                saveRideDetails(
+                                    carModel: carModel,
+                                    image: carModel.images[0],
+                                    arrivalTime: arrivalTime,
+                                    totalCost: totalCost
+                                )
+                            })
+                            }
                             Text("Confirm Ride")
                                 .font(.system(size: 16))
                                 .foregroundColor(.black)

@@ -93,6 +93,7 @@ struct RidesDetailView: View {
                                     origin: origin,
                                     destination: destinaiton,
                                     subtotal: distanceCost,
+                                    arrivalTime: Date(),
                                     navigationPath: $navigationPath
                                 )
                                     .navigationBarBackButtonHidden(true)

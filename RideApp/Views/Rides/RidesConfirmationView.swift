@@ -41,13 +41,13 @@ struct RidesSummaryView: View {
                 .padding(.top, 15)
                 .padding(.bottom, 5)
             
-            Text("You’ll receive a reminder 24 hours before your pickup.")
+            Text("Hang tight, your ride should arrive shortly.")
                 .font(.system(size: 12, weight: .bold))
 
-            Text("Please arrive at Ride Plaza at your scheduled time.")
+            Text("Please stay nearby the specified pickup location.")
                 .font(.system(size: 12, weight: .bold))
 
-            Text("Bring your valid ID for a smooth handoff.")
+            Text("Verify that the car is the same as the ordered ordered one.")
                 .font(.system(size: 12, weight: .bold))
             
         }

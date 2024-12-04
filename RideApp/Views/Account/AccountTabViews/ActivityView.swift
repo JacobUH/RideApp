@@ -50,6 +50,8 @@ struct ActivityView: View {
                 self.isLoading = false
             }
     }
+    
+    func fetchUserRides() {}
 
 
     var body: some View {
