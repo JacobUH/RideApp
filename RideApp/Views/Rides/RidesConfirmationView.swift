@@ -93,7 +93,7 @@ struct RidesConfirmationView: View {
                         .padding(.horizontal)
                         .padding(.top, 15)
                     
-                    Text("We’ve got everything ready for your upcoming ride. If we have any questions, we’ll reach out to you directly.")
+                    Text("We’ve got everything ready for your upcoming ride. Hang tight and give the driver at least 10 minutes to arrive.")
                         .font(.system(size: 14, weight: .semibold))
                         .padding(.all)
                     

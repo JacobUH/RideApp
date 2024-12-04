@@ -15,7 +15,7 @@ struct RidesCheckoutView: View {
     @Environment(\.presentationMode) var presentationMode
 
     private let db = Firestore.firestore()
-    
+
     var carModel: CarDetails
     var origin: String
     var destination: String
@@ -24,14 +24,13 @@ struct RidesCheckoutView: View {
     @Binding var navigationPath: NavigationPath
     @State private var navigateToConfirmation: Bool = false
     @State private var errorMessage = ""
-    
-    func saveRideDetails(carModel: CarDetails, image: String, arrivalTime: String, totalCost: Double) {
+
+    func saveRideDetails(carModel: CarDetails, image: String, arrivalTime: Date, totalCost: Double) {
         guard let currentUser = Auth.auth().currentUser else {
             errorMessage = "No authenticated user found. Please log in first."
             return
         }
 
-        // Convert the CarDetails object to a dictionary
         let carModelData: [String: Any] = [
             "carName": carModel.carName,
             "carType": carModel.carType,
@@ -51,17 +50,15 @@ struct RidesCheckoutView: View {
             "dailyCost": carModel.dailyCost
         ]
 
-        // Create the rental data dictionary
         let rideData: [String: Any] = [
             "carModel": carModelData,
             "image": image,
-            "arrivalTime": arrivalTime,
+            "arrivalTime": Timestamp(date: arrivalTime),
             "totalCost": totalCost,
             "userId": currentUser.uid,
             "userEmail": currentUser.email ?? "Unknown"
         ]
 
-        // Save the rental to Firestore
         db.collection("user_rides").addDocument(data: rideData) { error in
             if let error = error {
                 print("Error saving ride data: \(error.localizedDescription)")
@@ -71,9 +68,9 @@ struct RidesCheckoutView: View {
             }
         }
     }
-    
+
     var numberOfMiles: Double = 10
-    
+
     var dailyCost: Double {
         let cleanString = carModel.dailyCost.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "")
         return Double(cleanString) ?? 0.0
@@ -89,26 +86,26 @@ struct RidesCheckoutView: View {
     var totalCost: Double {
         return roundToTwoDecimalPlaces(subtotal + taxes)
     }
-    
+
     private func roundToTwoDecimalPlaces(_ value: Double) -> Double {
         return (value * 100).rounded() / 100
     }
 
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
-            
+
         ZStack {
             Color(hex: "1C1C1E")
                 .edgesIgnoringSafeArea(.all)
             VStack(spacing: 0) {
                 if orientation.isPortrait(device: .iPhone) {
                     topBarView()
-                    
+
                     Text("Checkout")
                         .foregroundStyle(.white)
                         .font(.system(size: 20, weight: .bold))
                         .padding(.vertical, 20)
-                    
+
                     HStack(spacing: 0) {
                         Image(carModel.images[0])
                             .resizable()
@@ -133,65 +130,7 @@ struct RidesCheckoutView: View {
                     .cornerRadius(5)
                     .padding(.horizontal)
                     .padding(.vertical, 15)
-                    
-                    HStack(spacing: 15) {
-                        VStack(alignment: .leading) {
-                            Text("Pickup")
-                                .font(.system(size: 16, weight: .heavy))
-                                .foregroundColor(.white)
-                                .padding(.bottom, 10)
-                            Text("Ride Plaza")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                            Text("1500 Velocity Drive")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                            Text("Houston, TX 77002")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-                        Spacer()
-                        Image("ridePlaza")
-                            .resizable()
-                            .scaledToFit()
-                        
-                    }
-                    .background(Color(hex: "2F2F31"))
-                    .cornerRadius(5)
-                    .padding(.horizontal)
-                    .padding(.vertical, 15)
-                    
-                    HStack(spacing: 15) {
-                        VStack(alignment: .leading) {
-                            Text("Destination")
-                                .font(.system(size: 16, weight: .heavy))
-                                .foregroundColor(.white)
-                                .padding(.bottom, 10)
-                            Text("Cyber Square")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                            Text("1500 Velocity Drive")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                            Text("Houston, TX 77002")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white)
-                        }
-                        .padding(.horizontal)
-                        .frame(maxWidth: .infinity)
-                        Spacer()
-                        Image("ridePlaza")
-                            .resizable()
-                            .scaledToFit()
-                        
-                    }
-                    .background(Color(hex: "2F2F31"))
-                    .cornerRadius(5)
-                    .padding(.horizontal)
-                    .padding(.vertical, 15)
 
-                    
                     VStack {
                         CostSummaryRow(
                             leftText: "\(numberOfMiles) Miles",
@@ -202,44 +141,37 @@ struct RidesCheckoutView: View {
                         CostSummaryRow(leftText: "Total", rightText: String(format: "%.2f", totalCost), color: .white)
                     }
                     .padding(.vertical, 30)
-                    
+
                     Spacer()
-                    VStack {
-                        NavigationLink(
-                            destination: RidesConfirmationView(
-                                carModel: carModel,
-                                destination: destination,
-                                origin: origin,
-                                totalCost: 100,
-                                navigationPath: $navigationPath
-                            )
-                            .navigationBarBackButtonHidden(true)
-                            .toolbar(.hidden, for: .tabBar)
-                        ) {
-                            Button(action: {
-                                saveRideDetails(
-                                    carModel: carModel,
-                                    image: carModel.images[0],
-                                    arrivalTime: arrivalTime,
-                                    totalCost: totalCost
-                                )
-                            })
-                            }
-                            Text("Confirm Ride")
-                                .font(.system(size: 16))
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity, maxHeight: 41)
-                                .background(Color(hex: "D9D9D9"))
-                                .cornerRadius(5)
-                                .padding(.horizontal, 25)
-                        }
+
+                    NavigationLink(
+                        destination: RidesConfirmationView(
+                            carModel: carModel,
+                            destination: destination,
+                            origin: origin,
+                            totalCost: totalCost,
+                            navigationPath: $navigationPath
+                        )
+                        .navigationBarBackButtonHidden(true)
+                        .toolbar(.hidden, for: .tabBar)
+                    ) {
+                        Text("Confirm Ride")
+                            .font(.system(size: 16))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity, maxHeight: 41)
+                            .background(Color(hex: "D9D9D9"))
+                            .cornerRadius(5)
+                            .padding(.horizontal, 25)
                     }
-                    .padding(.top, 15)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(hex: "101011"))
+                    .simultaneousGesture(TapGesture().onEnded {
+                        saveRideDetails(
+                            carModel: carModel,
+                            image: carModel.images[0],
+                            arrivalTime: arrivalTime,
+                            totalCost: totalCost
+                        )
+                    })
                 }
-                
-                else if orientation.isLandscape(device: .iPhone) {}
             }
         }
         .navigationBarTitleDisplayMode(.inline)
