@@ -19,6 +19,8 @@ struct RidesLocationSearchView: View {
     @Binding var navigationPath: NavigationPath
     @Binding var originAddress: String
     @Binding var destinationAddress: String
+    @Binding var fullOriginAddress: String
+    @Binding var fullDestinationAddress: String
 
     var body: some View {
         let orientation = DeviceHelper(
@@ -93,6 +95,7 @@ struct RidesLocationSearchView: View {
                                 )
                                 .onTapGesture {
                                     destinationAddress = result.title
+                                    fullDestinationAddress = result.subtitle
                                     locationSearchVM.selectLocation(result)
                                     locationSearchVM.showSelectedLocation
                                         .toggle()

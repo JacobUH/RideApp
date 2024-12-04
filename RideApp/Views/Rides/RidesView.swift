@@ -1,8 +1,7 @@
 import CoreLocation
+import Foundation
 import MapKit
 import SwiftUI
-
-
 
 struct RidesView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass:
@@ -14,11 +13,14 @@ struct RidesView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var searchCompleter = MKLocalSearchCompleter()
 
-    @State public var destinationAddress: String = ""
-    @State public var originAddress: String = ""
+    @State public var truncDestinationAddress: String = ""
+    @State public var fullDestinationAddress: String = ""
+    @State public var truncOriginAddress: String = ""
+    @State public var fullOriginAddress: String = ""
     @State public var driveTime: String = "Next Stop?"
     @State private var selectedCar: CarDetails?
     @State private var navigationPath = NavigationPath()
+    @State private var distance: Double?
 
     @State private var cars: [CarDetails] = []
 
@@ -31,6 +33,55 @@ struct RidesView: View {
             } catch {
                 print("Failed to decode JSON: \(error)")
             }
+        }
+    }
+
+    func calculateDistance(origin: String, destination: String) async -> Double?
+    {
+        let geocoder = CLGeocoder()
+
+        do {
+            // Geocode origin address
+            let originPlacemarks = try await geocoder.geocodeAddressString(
+                origin)
+            guard let originPlacemark = originPlacemarks.first,
+                let originLocation = originPlacemark.location
+            else {
+                print("Error: Unable to find origin location")
+                return nil
+            }
+
+            // Geocode destination address
+            let destinationPlacemarks = try await geocoder.geocodeAddressString(
+                destination)
+            guard let destinationPlacemark = destinationPlacemarks.first,
+                let destinationLocation = destinationPlacemark.location
+            else {
+                print("Error: Unable to find destination location")
+                return nil
+            }
+
+            // Create MKDirections request
+            let request = MKDirections.Request()
+            request.source = MKMapItem(
+                placemark: MKPlacemark(coordinate: originLocation.coordinate))
+            request.destination = MKMapItem(
+                placemark: MKPlacemark(
+                    coordinate: destinationLocation.coordinate))
+            request.transportType = .automobile
+
+            // Calculate directions
+            let directions = MKDirections(request: request)
+            let response = try await directions.calculate()
+            if let route = response.routes.first {
+                return Double(String(format: "%.2f", route.distance / 1609)) // Distance in miles, converted from meters
+            } else {
+                print("Error: No route found")
+                return nil
+            }
+        } catch {
+            print("Error calculating distance: \(error.localizedDescription)")
+            return nil
         }
     }
 
@@ -65,23 +116,26 @@ struct RidesView: View {
 
                             ZStack(alignment: .top) {
                                 RouteMapView(
-                                    originAddress: $originAddress,
-                                    destinationAddress: $destinationAddress
+                                    originAddress: $truncOriginAddress,
+                                    fullOriginAddress: $fullOriginAddress,
+                                    destinationAddress: $truncDestinationAddress
                                 )
-                                    .environmentObject(locationSearchVM)
-                                    .frame(maxWidth: .infinity, maxHeight: 720)
-                                    .edgesIgnoringSafeArea(.all)
-                                    
+                                .environmentObject(locationSearchVM)
+                                .frame(maxWidth: .infinity, maxHeight: 720)
+                                .edgesIgnoringSafeArea(.all)
 
                                 VStack {
-                                    if destinationAddress.isEmpty {
+                                    if fullDestinationAddress.isEmpty {
                                         Text(
                                             "\(Image(systemName: "magnifyingglass")) Where To?"
                                         )
                                         .onTapGesture {
-                                            navigationPath.append("locationSearch")
+                                            navigationPath.append(
+                                                "locationSearch")
                                         }
-                                        .frame(maxWidth: .infinity, maxHeight: 25)
+                                        .frame(
+                                            maxWidth: .infinity, maxHeight: 25
+                                        )
                                         .foregroundStyle(.white)
                                         .padding(20)
                                         .background(
@@ -92,25 +146,31 @@ struct RidesView: View {
                                         .padding(.top, 10)
                                         .foregroundColor(.white)
                                         .multilineTextAlignment(.center)
-                                    }
-                                    else {
+                                    } else {
                                         Text(
-                                            "\(Image(systemName: "magnifyingglass")) \(destinationAddress)"
+                                            "\(Image(systemName: "magnifyingglass")) \(fullDestinationAddress)"
                                         )
                                         .onTapGesture {
-                                            navigationPath.append("locationSearch")
+                                            navigationPath.append(
+                                                "locationSearch")
                                         }
-                                        .frame(maxWidth: .infinity, maxHeight: 25)
+                                        .frame(
+                                            maxWidth: .infinity,
+                                            maxHeight: 25
+                                        )
                                         .foregroundStyle(.white)
                                         .padding(20)
                                         .background(
-                                            Color(hex: "303033").opacity(0.8)
+                                            Color(hex: "303033")
+                                                .opacity(0.8)
                                         )
                                         .cornerRadius(24)
                                         .padding(.horizontal, 32)
                                         .padding(.top, 10)
                                         .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
+                                        .multilineTextAlignment(
+                                            .center)
+
                                     }
                                 }
                                 .padding(.top, 15)
@@ -143,7 +203,7 @@ struct RidesView: View {
                                         .font(.headline)
                                         .foregroundStyle(.white)
                                         .padding()
-                                    Text("\(originAddress)")
+                                    Text("\(fullOriginAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
                                         .padding(.leading, 16)
@@ -153,7 +213,7 @@ struct RidesView: View {
                                         .font(.headline)
                                         .foregroundStyle(.white)
                                         .padding()
-                                    Text("\(destinationAddress)")
+                                    Text("\(fullDestinationAddress)")
                                         .font(.headline)
                                         .foregroundStyle(.white)
                                         .padding(.leading, 16)
@@ -229,23 +289,27 @@ struct RidesView: View {
                             }
                         }
                         .navigationDestination(for: CarDetails.self) { car in
-                            RidesDetailView(
-                                distanceCost: 100.00,
-                                origin: originAddress,
-                                destinaiton: destinationAddress,
-                                carModel: car,
-                                navigationPath: $navigationPath
-                            )
-                            .navigationBarBackButtonHidden(true)
-                            .toolbar(.hidden, for: .tabBar)
+                            if let distance = distance {
+                                RidesDetailView(
+                                    distance: distance,
+                                    origin: truncOriginAddress,
+                                    destinaiton: truncDestinationAddress,
+                                    carModel: car,
+                                    navigationPath: $navigationPath
+                                )
+                                .navigationBarBackButtonHidden(true)
+                                .toolbar(.hidden, for: .tabBar)
+                            }
                         }
                         .navigationDestination(for: String.self) {
                             destination in
                             if destination == "locationSearch" {
                                 RidesLocationSearchView(
                                     navigationPath: $navigationPath,
-                                    originAddress: $originAddress,
-                                    destinationAddress: $destinationAddress
+                                    originAddress: $truncOriginAddress,
+                                    destinationAddress: $truncDestinationAddress,
+                                    fullOriginAddress: $fullOriginAddress,
+                                    fullDestinationAddress: $fullDestinationAddress
                                 )
                                 .environmentObject(locationSearchVM)
                                 .navigationBarBackButtonHidden(true)
@@ -293,10 +357,10 @@ struct RidesView: View {
                 loadCarData()
                 checkDrawerVisibility()  // Ensure drawer is updated on load if addresses are set
             }
-            .onChange(of: originAddress) {
+            .onChange(of: truncOriginAddress) {
                 checkDrawerVisibility()
             }
-            .onChange(of: destinationAddress) {
+            .onChange(of: truncDestinationAddress) {
                 checkDrawerVisibility()
             }
         }
@@ -315,9 +379,15 @@ struct RidesView: View {
     }
 
     func checkDrawerVisibility() {
-        if !originAddress.isEmpty && !destinationAddress.isEmpty {
-            showDrawer()  // Both addresses are filled, show the drawer
-        } else if !originAddress.isEmpty || !destinationAddress.isEmpty {
+        if !fullOriginAddress.isEmpty && !fullDestinationAddress.isEmpty {
+            showDrawer()
+            Task {
+                print("Origin: \(fullOriginAddress), Destination: \(fullDestinationAddress)")
+                distance = await calculateDistance(
+                    origin: fullOriginAddress, destination: fullDestinationAddress)
+                
+            }
+        } else if !fullOriginAddress.isEmpty || !fullDestinationAddress.isEmpty {
             // At least one address is filled, keep the drawer hidden but allow it to be reopened
             if !isDrawerVisible {
                 drawerOffset = UIScreen.main.bounds.height * 0.95  // Drawer closer to the bottom

@@ -190,7 +190,7 @@ struct HomeView: View {
                         
                     case .nearby(let car):
                         RidesDetailView(
-                            distanceCost: 100.00,
+                            distance: 0,
                             origin: originAddress,
                             destinaiton: destinationAddress,
                             carModel: car,

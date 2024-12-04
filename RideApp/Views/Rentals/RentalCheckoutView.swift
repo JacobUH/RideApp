@@ -322,8 +322,7 @@ struct RentalCheckoutView: View {
                                     navigationPath: $navigationPath
                                 )
                                 .navigationBarBackButtonHidden(true)
-                                .toolbar(.hidden, for: .tabBar),
-                                isActive: $navigateToConfirmation
+                                .toolbar(.hidden, for: .tabBar)
                             ) {
                                 EmptyView()
                             }

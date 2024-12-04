@@ -71,6 +71,7 @@ struct RidesConfirmationView: View {
     var destination: String
     var origin: String
     var totalCost: Double
+    var selectedCard: Card
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
