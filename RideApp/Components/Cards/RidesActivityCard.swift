@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RidesActivityCard: View {
-    let CarData: Rental
+    let CarData: Ride
     
     var body: some View {
         
@@ -16,30 +16,34 @@ struct RidesActivityCard: View {
         dateFormatter.dateFormat = "MMM dd"  // Month (full name) and day, e.g., "September 25"
         
         // Convert pickupDate and dropoffDate to string within the body
-        let pickupDateString = dateFormatter.string(from: CarData.pickupDate)
-        let dropoffDateString = dateFormatter.string(from: CarData.dropoffDate)
+        let arrivalTime = CarData.arrivalTime
         
         return ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     VStack (alignment: .leading){
-                        Text("Rental Reservation")
+                        Text("Ride Reservation")
                             .lineLimit(1)
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(Color(hex: "4FA0FF"))
                             .padding(.leading, 10)
-                        Text(pickupDateString + " - " + dropoffDateString)
+                        Text(arrivalTime.formatted(.dateTime.year().month().day().hour().minute()))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
 
-                        Spacer()
                         Text(CarData.carModel.carName)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
-                        Text(CarData.carModel.exterior)
+                        Spacer()
+                        Text(CarData.originAddress)
+                            .lineLimit(1)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.leading, 10)
+                        Text(CarData.destinationAddress)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)

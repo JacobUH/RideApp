@@ -12,8 +12,8 @@ struct Ride: Identifiable, Decodable, Hashable {
     var carModel: CarDetails  // Change from String to CarDetails
     var arrivalTime: Date
     var totalCost: Double
-    var origin: String
-    var destination: String
+    var originAddress: String
+    var destinationAddress: String
     var selectedCard: Card
 }
 

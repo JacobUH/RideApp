@@ -139,10 +139,9 @@ struct ActivityView: View {
                     //                        print("Rental Document ID: \(document.documentID), Data: \(document.data())")
                     //                    }
 
-                    let _ = documents.compactMap { doc -> Ride? in
+                    let rides = documents.compactMap { doc -> Ride? in
                         do {
                             let ride = try doc.data(as: Ride.self)
-                            //                            print("Decoded Rental: \(rental)") // Log each decoded rental
                             return ride
                         } catch let decodingError {
                             // Log the full error object and associated info
@@ -244,39 +243,45 @@ struct ActivityView: View {
                         } else {
 
                             ScrollView {
-                                Text("Rentals")
-                                    .font(.headline)
-                                    .padding(.horizontal)
-                                    .background(Color.gray.opacity(0.2))
-
-                                ForEach(rentals) { rental in
-                                    Button(action: {
-                                        // Append the entire rental object to the navigation path
-                                        navigationPath.append(rental)
-                                    }) {
-                                        RentalActivityCard(CarData: rental)
-                                            .padding(.bottom, 10)
+                                if !rentals.isEmpty {
+                                    Text("Rentals")
+                                        .font(.headline)
+                                        .padding(.horizontal)
+                                        .foregroundStyle(.white)
+                                        .multilineTextAlignment(.leading)
+                                    
+                                    ForEach(rentals) { rental in
+                                        Button(action: {
+                                            // Append the entire rental object to the navigation path
+                                            navigationPath.append(rental)
+                                        }) {
+                                            RentalActivityCard(CarData: rental)
+                                                .padding(.bottom, 10)
+                                        }
                                     }
-                                }
-                                .onDelete { IndexSet in
-
-                                }
+                                    .onDelete { IndexSet in
+                                        
+                                    }
                                 
-                                Text("Rides")
-                                    .font(.headline)
-                                    .padding(.horizontal)
-                                    .background(Color.gray.opacity(0.2))
-                                ForEach(rides) { ride in
-                                    Button(action: {
-                                        // Append the entire ride object to the navigation path
-                                        navigationPath.append(ride)
-                                    }) {
-                                        RidesActivityCard(CarData: ride)
-                                            .padding(.bottom, 10)
-                                    }
                                 }
-                                .onDelete { IndexSet in
-
+                                if !rides.isEmpty {
+                                    Text("Rides")
+                                        .font(.headline)
+                                        .padding(.horizontal)
+                                        .foregroundStyle(.white)
+                                        .multilineTextAlignment(.leading)
+                                    ForEach(rides) { ride in
+                                        Button(action: {
+                                            // Append the entire ride object to the navigation path
+                                            navigationPath.append(ride)
+                                        }) {
+                                            RidesActivityCard(CarData: ride)
+                                                .padding(.bottom, 10)
+                                        }
+                                    }
+                                    .onDelete { IndexSet in
+                                        
+                                    }
                                 }
 
                             }
@@ -302,8 +307,8 @@ struct ActivityView: View {
                 .navigationDestination(for: Ride.self) { ride in
                     RidesConfirmationView(
                         carModel: ride.carModel,
-                        destination: ride.destination,
-                        origin: ride.origin,
+                        destination: ride.destinationAddress,
+                        origin: ride.originAddress,
                         totalCost: ride.totalCost,
                         selectedCard: ride.selectedCard,
                         navigationPath: $navigationPath
