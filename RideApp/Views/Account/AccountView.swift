@@ -12,9 +12,10 @@ import FirebaseFirestore
 struct AccountView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
+    var onLogoutSuccess: (() -> Void)? // Callback for successful logout
     
     private let db = Firestore.firestore() // Firestore instance
-
+    
     // State variables for user information
     @State private var firstName = ""
     @State private var lastName = ""
@@ -167,7 +168,7 @@ struct AccountView: View {
                        }
                        
                         // settings
-                        NavigationLink(destination: SettingsView()
+                        NavigationLink(destination: SettingsView(onLogoutSuccess: onLogoutSuccess)
                             .navigationBarBackButtonHidden(true)
                         ) {
                             HStack {

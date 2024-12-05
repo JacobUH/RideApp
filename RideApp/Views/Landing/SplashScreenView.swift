@@ -16,8 +16,7 @@ struct SplashScreenView: View {
 
     var body: some View {
         ZStack {
-            // LandingView behind the splash screen
-            LandingView()
+            MainView()
                 .opacity(landingViewOpacity)
                 .edgesIgnoringSafeArea(.all)
             
@@ -53,7 +52,7 @@ struct SplashScreenView: View {
                         .multilineTextAlignment(.center)
                         .foregroundColor(.white)
                         .frame(width: 325, alignment: .center)
-                        .padding()
+                        .padding(.bottom, 30)
                 }
             }
             .opacity(1.0 - landingViewOpacity) // Fade out Splash Screen as LandingView fades in

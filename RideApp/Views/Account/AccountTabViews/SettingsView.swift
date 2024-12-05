@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.presentationMode) var presentationMode
+    var onLogoutSuccess: (() -> Void)? // Callback for successful logout
 
     @State private var showAlert = false
     @State private var errorMessage = ""
@@ -21,6 +22,7 @@ struct SettingsView: View {
         do {
             try Auth.auth().signOut()
             print("User logged out successfully")
+            onLogoutSuccess?() // Call the onLogout callback when the user logs out
             presentationMode.wrappedValue.dismiss()
         } catch let error as NSError {
             errorMessage = "Error signing out: \(error.localizedDescription)"

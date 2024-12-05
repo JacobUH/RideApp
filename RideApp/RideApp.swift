@@ -15,7 +15,7 @@ struct RideApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            LandingView()
+            SplashScreenView()
         }
     }
 }
