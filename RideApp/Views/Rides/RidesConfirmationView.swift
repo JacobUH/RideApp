@@ -41,13 +41,13 @@ struct RidesSummaryView: View {
                 .padding(.top, 15)
                 .padding(.bottom, 5)
             
-            Text("You’ll receive a reminder 24 hours before your pickup.")
+            Text("Hang tight, your ride should arrive shortly.")
                 .font(.system(size: 12, weight: .bold))
 
-            Text("Please arrive at Ride Plaza at your scheduled time.")
+            Text("Please stay nearby the specified pickup location.")
                 .font(.system(size: 12, weight: .bold))
 
-            Text("Bring your valid ID for a smooth handoff.")
+            Text("Verify that the car is the same \(carModel.carName) shown in the images.")
                 .font(.system(size: 12, weight: .bold))
             
         }
@@ -71,6 +71,7 @@ struct RidesConfirmationView: View {
     var destination: String
     var origin: String
     var totalCost: Double
+    var selectedCard: Card
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
@@ -93,7 +94,7 @@ struct RidesConfirmationView: View {
                         .padding(.horizontal)
                         .padding(.top, 15)
                     
-                    Text("We’ve got everything ready for your upcoming ride. If we have any questions, we’ll reach out to you directly.")
+                    Text("We’ve got everything ready for your upcoming ride. Hang tight and give the driver at least 10 minutes to arrive.")
                         .font(.system(size: 14, weight: .semibold))
                         .padding(.all)
                     

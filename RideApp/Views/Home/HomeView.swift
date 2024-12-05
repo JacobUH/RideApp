@@ -16,7 +16,7 @@ struct HomeView: View {
     @State private var navigationPath = NavigationPath()
     
     @State public var destinationAddress: String = ""
-    @State public var originAddress: String = "13418 Misty Orchard Ln"
+    @State public var originAddress: String = ""
     @State public var driveTime: String = "Next Stop?"
     
     enum CarType: Hashable {
@@ -190,7 +190,7 @@ struct HomeView: View {
                         
                     case .nearby(let car):
                         RidesDetailView(
-                            distanceCost: 100.00,
+                            distance: 0,
                             origin: originAddress,
                             destinaiton: destinationAddress,
                             carModel: car,
@@ -210,9 +210,6 @@ struct HomeView: View {
             Image(systemName: "house.fill")
             Text("Home")
         }
-        
-        
-        
     }
 }
 

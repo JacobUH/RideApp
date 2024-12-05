@@ -8,8 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    init() {
+    var onLogoutSuccess: (() -> Void)? // Optional callback for successful login
+    @Binding var selectedTab: Int 
+
+    init(onLogoutSuccess: (() -> Void)? = nil, selectedTab: Binding<Int>) {
+        self.onLogoutSuccess = onLogoutSuccess
+        self._selectedTab = selectedTab
+
         // Set the UITabBar background color
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
@@ -18,19 +23,24 @@ struct ContentView: View {
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
     }
+
     var body: some View {
         VStack {
-            TabView{
+            TabView(selection: $selectedTab) {
                 HomeView()
+                    .tag(0)
                 RidesView()
                     .environment(\.colorScheme, .dark)
+                    .tag(1)
                 RentalsView()
-                AccountView()
+                    .tag(2)
+                AccountView(onLogoutSuccess: onLogoutSuccess)
+                    .tag(3)
             }
         }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(onLogoutSuccess: nil, selectedTab: .constant(0))
 }

@@ -108,23 +108,23 @@ struct RentalDetailView: View {
                 }
             }
         
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "chevron.backward")
-                        .foregroundStyle(Color(hex: "999999"))
-                        .padding(.leading)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.backward")
+                            .foregroundStyle(Color(hex: "999999"))
+                            .padding(.leading)
+                    }
+                }
+
+                ToolbarItem(placement: .principal) {
+                    Text("RIDE")
+                        .font(.system(size: 24, weight: .black))
+                        .foregroundStyle(Color(.white))
                 }
             }
-
-            ToolbarItem(placement: .principal) {
-                Text("RIDE")
-                    .font(.system(size: 24, weight: .black))
-                    .foregroundStyle(Color(.white))
-            }
-        }
     }
 }

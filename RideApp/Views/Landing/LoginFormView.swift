@@ -1,37 +1,33 @@
-//
-//  LoginFormView.swift
-//  RideApp
-//
-//  Created by Jacob Rangel on 10/22/24.
-//
-
 import SwiftUI
 import FirebaseAuth
 
 struct LoginFormView: View {
-    
     @State private var email = ""
     @State private var password = ""
     @State private var navigateToHome = false
     @State private var errorMessage = ""
-        
+    @State private var showAlert = false // Controls alert visibility
+    
+    var onLoginSuccess: (() -> Void)? // Optional callback for successful login
+
     func login() {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
-                print(error.localizedDescription)
-                errorMessage = "\(error.localizedDescription)"
+                print("Login failed: \(error.localizedDescription)")
+                errorMessage = error.localizedDescription
+                showAlert = true
             } else {
                 print("User signed in successfully")
+                onLoginSuccess?() // Notify parent of login success
                 navigateToHome = true
             }
         }
     }
-    
+
     var body: some View {
         VStack {
-        
-            // email
-            ZStack() {
+            // Email Field
+            ZStack {
                 Text("Email")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
@@ -40,15 +36,15 @@ struct LoginFormView: View {
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
-                    .background(Color(.black).opacity(0.30))
+                    .background(Color.black.opacity(0.30))
                     .cornerRadius(5)
-                    .overlay(RoundedRectangle(cornerRadius: 5).inset(by: 0.50).stroke(.white, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.white, lineWidth: 1))
             }
             .frame(width: 349, height: 72)
             .padding(.vertical, 5)
-            
-            // password
-            ZStack() {
+
+            // Password Field
+            ZStack {
                 Text("Password")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
@@ -57,37 +53,35 @@ struct LoginFormView: View {
                     .padding(.leading, 10)
                     .foregroundColor(.white)
                     .frame(width: 349, height: 51)
-                    .background(Color(.black).opacity(0.30))
+                    .background(Color.black.opacity(0.30))
                     .cornerRadius(5)
-                    .overlay(RoundedRectangle(cornerRadius: 5).inset(by: 0.50).stroke(.white, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.white, lineWidth: 1))
             }
             .frame(width: 349, height: 72)
             .padding(.vertical, 5)
 
-            NavigationLink(destination: ContentView()
-                .navigationBarBackButtonHidden(true),
-                isActive: $navigateToHome) {
-                    Button(action: {
-                        login()
-                    }) {
-                        Text("Login")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity, maxHeight: 50)
-                            .background(Color(hex: "4FA0FF"))
-                            .cornerRadius(5)
-                            .padding(.horizontal)
-                    }
-                }
+            // Login Button
+            Button(action: {
+                login()
+            }) {
+                Text("Login")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, maxHeight: 50)
+                    .background(Color(hex: "4FA0FF"))
+                    .cornerRadius(5)
+                    .padding(.horizontal)
+            }
+            .padding(.top)
         }
-        .alert(isPresented: .constant(!errorMessage.isEmpty), content: {
+        .alert(isPresented: $showAlert) {
             Alert(
                 title: Text("Login Error"),
                 message: Text(errorMessage),
-                dismissButton: .default(Text("OK"), action: {
+                dismissButton: .default(Text("OK")) {
                     errorMessage = ""
-                })
+                }
             )
-        })
+        }
     }
 }

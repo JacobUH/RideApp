@@ -10,8 +10,7 @@ import FirebaseAuth
 import FirebaseFirestore
 
 struct SignUpFormView: View {
-    
-    
+    var onLoginSuccess: (() -> Void)? // Optional callback for successful login
     
     @State private var firstname = ""
     @State private var lastname = ""
@@ -55,13 +54,16 @@ struct SignUpFormView: View {
                 db.collection("users").document(user.uid).setData([
                     "firstName": firstname,
                     "lastName": lastname,
-                    "email": email
+                    "email": email,
+                    "phone" : "~",
+                    "gender" : "",
                 ]) { error in
                     if let error = error {
                         print(error.localizedDescription)
                         errorMessage = "Error saving user data: \(error.localizedDescription)"
                     } else {
                         print("User data saved successfully")
+                        onLoginSuccess?() // Notify parent of login success
                         navigateToHome = true
                     }
                 }
@@ -151,26 +153,44 @@ struct SignUpFormView: View {
             .frame(width: 349, height: 20)
             .padding(.top, -10)
             
-            NavigationLink(destination: ContentView()
-                .navigationBarBackButtonHidden(true),
-                isActive: $navigateToHome) {
-                    Button(action: {
-                        if firstname.isEmpty || lastname.isEmpty {
-                            errorMessage = "Please enter both first and last names."
-                        } else {
-                            register()
-                        }
-                    }) {
-                        Text("Sign Up")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity, maxHeight: 50)
-                            .background(Color(hex: "4FA0FF"))
-                            .cornerRadius(5)
-                            .padding(.horizontal)
-                    }
+            // Sign Up Button
+            Button(action: {
+                if firstname.isEmpty || lastname.isEmpty {
+                    errorMessage = "Please enter both first and last names."
+                } else {
+                    register()
                 }
-                .padding(.top, 20)
+            }) {
+                Text("Sign Up")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, maxHeight: 50)
+                    .background(Color(hex: "4FA0FF"))
+                    .cornerRadius(5)
+                    .padding(.horizontal)
+            }
+            .padding(.top, 20)
+
+//            NavigationLink(destination: ContentView()
+//                .navigationBarBackButtonHidden(true),
+//                isActive: $navigateToHome) {
+//                    Button(action: {
+//                        if firstname.isEmpty || lastname.isEmpty {
+//                            errorMessage = "Please enter both first and last names."
+//                        } else {
+//                            register()
+//                        }
+//                    }) {
+//                        Text("Sign Up")
+//                            .font(.system(size: 20, weight: .bold))
+//                            .foregroundColor(.white)
+//                            .frame(maxWidth: .infinity, maxHeight: 50)
+//                            .background(Color(hex: "4FA0FF"))
+//                            .cornerRadius(5)
+//                            .padding(.horizontal)
+//                    }
+//                }
+//                .padding(.top, 20)
         }
         .alert(isPresented: .constant(!errorMessage.isEmpty), content: {
             Alert(

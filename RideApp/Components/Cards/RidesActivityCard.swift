@@ -1,18 +1,14 @@
 //
-//  ActivityCard.swift
+//  RidesActivityCard.swift
 //  RideApp
 //
-//  Created by Jacob Rangel on 11/18/24.
+//  Created by Sage Turner on 12/4/24.
 //
 
 import SwiftUI
 
-struct ActivityCard: View {
-    let CarName: String
-    let imageName: String
-    let pickupDate: Date
-    let dropoffDate: Date
-    let totalCost: String
+struct RidesActivityCard: View {
+    let CarData: Ride
     
     var body: some View {
         
@@ -20,45 +16,48 @@ struct ActivityCard: View {
         dateFormatter.dateFormat = "MMM dd"  // Month (full name) and day, e.g., "September 25"
         
         // Convert pickupDate and dropoffDate to string within the body
-        let pickupDateString = dateFormatter.string(from: pickupDate)
-        let dropoffDateString = dateFormatter.string(from: dropoffDate)
+        let arrivalTime = CarData.arrivalTime
         
         return ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     VStack (alignment: .leading){
-                        Text("Rental Reservation")
+                        Text("Ride Reservation")
                             .lineLimit(1)
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(Color(hex: "4FA0FF"))
                             .padding(.leading, 10)
-                        Text(pickupDateString + " - " + dropoffDateString)
+                        Text(arrivalTime.formatted(.dateTime.year().month().day().hour().minute()))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
 
-                        Spacer()
-                        Text(CarName)
-                            .lineLimit(1)
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
-                            .padding(.leading, 10)
-                        Text("CarExterior")
+                        Text(CarData.carModel.carName)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
                         Spacer()
-                        Text(totalCost + " ~ " + "Apple Pay")
+                        Text(CarData.originAddress)
                             .lineLimit(1)
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.leading, 10)
-                        
+                        Text(CarData.destinationAddress)
+                            .lineLimit(1)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.leading, 10)
+                        Spacer()
+                        Text("$\(String(format: "%.2f", CarData.totalCost)) ~ \(CarData.selectedCard.cardType)")
+                            .lineLimit(1)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.leading, 10)
                     }
                     
                     Spacer()
-                    Image(imageName)
+                    Image(CarData.carModel.images[0])
                         .resizable()
                         .frame(width: 180, height: 113)
                         .padding(.trailing, 10)

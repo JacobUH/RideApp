@@ -13,7 +13,7 @@ struct RidesDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var currentImageIndex = 0
-    var distanceCost: Double
+    var distance: Double
     var origin: String
     var destinaiton: String
     
@@ -22,7 +22,7 @@ struct RidesDetailView: View {
     
     var body: some View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
-       
+        let cost  = distance * 5
             ZStack {
                 Color(hex: "1C1C1E")
                     .edgesIgnoringSafeArea(.all)
@@ -81,7 +81,7 @@ struct RidesDetailView: View {
                         }
                         Spacer()
                         HStack {
-                            Text("$" +  String(format: "%.2f", distanceCost) + "\nTax included at checkout")
+                            Text("$" +  String(format: "%.2f", cost) + "\nTax included at checkout")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.white)
                                 .padding(.leading, 25)
@@ -92,7 +92,9 @@ struct RidesDetailView: View {
                                     carModel: carModel,
                                     origin: origin,
                                     destination: destinaiton,
-                                    subtotal: distanceCost,
+                                    subtotal: cost,
+                                    distance: distance,
+                                    arrivalTime: Date(),
                                     navigationPath: $navigationPath
                                 )
                                     .navigationBarBackButtonHidden(true)
