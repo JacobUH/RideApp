@@ -9,6 +9,7 @@ import Foundation
 import MapKit
 import SwiftUI
 
+// Map component for the RidesView
 struct RouteMapView: UIViewRepresentable {
 
     let mapView = MKMapView()

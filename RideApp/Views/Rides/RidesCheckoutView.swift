@@ -14,9 +14,9 @@ struct RidesCheckoutView: View {
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.presentationMode) var presentationMode
     
+//    Connect to the database
     private let db = Firestore.firestore()
 
-    
     @State private var showAlert = false
     @State private var errorMessage = ""
     
@@ -91,6 +91,7 @@ struct RidesCheckoutView: View {
         }
     }
     
+//    Grabs User Cards from the database
     func fetchUserCards() {
         guard let currentUser = Auth.auth().currentUser else {
             print("No authenticated user found.")

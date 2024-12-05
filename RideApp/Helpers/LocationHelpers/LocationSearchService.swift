@@ -9,6 +9,7 @@ import MapKit
 import SwiftUI
 import Combine
 
+// Geolocation helper
 class LocationSearchService: NSObject, ObservableObject {
     @Published var searchResults: [MKLocalSearchCompletion] = []
     private var completer: MKLocalSearchCompleter

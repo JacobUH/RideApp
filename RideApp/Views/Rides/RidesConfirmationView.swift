@@ -56,7 +56,7 @@ struct RidesSummaryView: View {
     }
 }
 
-
+// Final view for rides, shows summary of your order
 struct RidesConfirmationView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?

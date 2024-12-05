@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+// Sorting sheet for ActivityView
 struct ActivitySortView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedSort: SortOption

@@ -21,6 +21,7 @@ struct ActivityView: View {
     @State private var rides: [Ride] = []  // Store rides fetched form Firestore
     @State private var updatedRentals: [Rental] = []  // Store rentals fetched from Firestore
     @State private var updatedRides: [Ride] = []  // Store rides fetched form Firestore
+    
     @State private var isLoading = true
     @State private var showingFilterView = false
     @State private var showingSortView = false
@@ -99,7 +100,7 @@ struct ActivityView: View {
             return rides
         }
     }
-
+//    Pulls rental information from Firestore
     func fetchUserRentals() {
         guard let currentUser = Auth.auth().currentUser else {
             print("No authenticated user found.")
@@ -110,35 +111,28 @@ struct ActivityView: View {
             .whereField("userId", isEqualTo: currentUser.uid)
             .getDocuments { snapshot, error in
                 if error != nil {
-                    //                    print("Error fetching rentals: \(error.localizedDescription)")
                 } else if let documents = snapshot?.documents {
-                    //                    print("Fetched \(documents.count) rentals for user: \(currentUser.uid)")
-
                     documents.forEach { document in
-                        //                        print("Rental Document ID: \(document.documentID), Data: \(document.data())")
                     }
 
                     let rentals = documents.compactMap { doc -> Rental? in
                         do {
                             let rental = try doc.data(as: Rental.self)
-                            //                            print("Decoded Rental: \(rental)") // Log each decoded rental
                             return rental
                         } catch _ {
-                            // Log the full error object and associated info
-                            //                            print("Error decoding rental: \(decodingError.localizedDescription)")
-                            //                            print("Error details: \(decodingError)")  // This will print more detailed information about the decoding error
+
                             return nil
                         }
                     }
 
                     self.rentals = rentals
-                    //                    print("Updated Rentals Array: \(rentals)")
-                } else {
-                    //                    print("No rentals found for user: \(currentUser.uid)")
+                }
+                else {
+                    print("No rentals found for user: \(currentUser.uid)")
                 }
             }
     }
-
+// pulls Ride information from firestore
     func fetchUserRides() {
         guard let currentUser = Auth.auth().currentUser else {
             print("No authenticated user found.")
@@ -151,12 +145,6 @@ struct ActivityView: View {
                 if let error = error {
                     print("Error fetching rides: \(error.localizedDescription)")
                 } else if let documents = snapshot?.documents {
-                    //                    print("Fetched \(documents.count) rentals for user: \(currentUser.uid)")
-
-                    //                    documents.forEach { document in
-                    //                        print("Rental Document ID: \(document.documentID), Data: \(document.data())")
-                    //                    }
-
                     let rides = documents.compactMap { doc -> Ride? in
                         do {
                             let ride = try doc.data(as: Ride.self)
@@ -178,8 +166,8 @@ struct ActivityView: View {
             }
     }
 
+    // Apply filters to rentals triggered by user input
     func applyFilters() {
-        // Apply filters to rentals
         updatedRentals = rentals.filter { rental in
             (selectedRentalType == "All" || selectedRentalType == "Rental")
                 && (selectedCarType == "All"
@@ -254,7 +242,7 @@ struct ActivityView: View {
                 return true
             }
         }
-
+// Checks if date is within a certain time frame
         func isWithinTimeFrame(_ date: Date) -> Bool {
             switch selectedTimeFrame {
             case "Today":

@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 
+// Geolocation main methods
 class LocationSearchViewModel: NSObject, ObservableObject{
     @Published var showSelectedLocation: Bool = false
     @Published var selectedLocationCoordinate: CLLocationCoordinate2D?

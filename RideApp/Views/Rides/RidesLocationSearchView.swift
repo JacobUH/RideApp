@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 
+// View for searching for an address to route to
 struct RidesLocationSearchView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass:
         UserInterfaceSizeClass?

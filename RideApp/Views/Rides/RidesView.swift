@@ -24,6 +24,7 @@ struct RidesView: View {
 
     @State private var cars: [CarDetails] = []
 
+//    Loads car data from an internal file, as an example of options
     func loadCarData() {
         if let jsonData = CarData.jsonString.data(using: .utf8) {
             do {

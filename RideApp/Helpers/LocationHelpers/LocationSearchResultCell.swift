@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// Individual Search Results/Autocomplete
 struct LocationSearchResultCell: View {
     let title: String
     let subtitle: String

@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 
+// Location manager (the thing that gets called to do geolocation)
 class LocationManager: NSObject, ObservableObject {
     private let locationManager = CLLocationManager()
     

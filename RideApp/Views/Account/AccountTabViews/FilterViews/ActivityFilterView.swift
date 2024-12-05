@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// Filter sheet for ActivityView
 struct ActivityFilterView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedCarType: String

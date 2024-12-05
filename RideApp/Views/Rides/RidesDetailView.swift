@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// Individual car specific view for RidesView
 struct RidesDetailView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
