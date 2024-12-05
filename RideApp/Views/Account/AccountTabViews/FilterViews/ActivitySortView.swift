@@ -10,11 +10,12 @@ import SwiftUI
 struct ActivitySortView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedSort: SortOption
+    @Binding var isSortActive: Bool
     
 
     let sortOptions: [SortOption] = [
         SortOption(title: "Most Recent"),
-        SortOption(title: "Least Recent"),
+        SortOption(title: "Oldest"),
         SortOption(title: "Alphabetical (Ascending)"),
         SortOption(title: "Alphabetical (Descending)"),
         SortOption(title: "Price (Ascending)"),
@@ -26,6 +27,7 @@ struct ActivitySortView: View {
             List(sortOptions) { option in
                 Button(action: {
                     selectedSort = option
+                    isSortActive.toggle()
                     dismiss()
                 }) {
                     HStack {

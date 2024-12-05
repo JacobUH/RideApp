@@ -19,6 +19,8 @@ struct ActivityView: View {
     private let db = Firestore.firestore()  // Firestore instance
     @State private var rentals: [Rental] = []  // Store rentals fetched from Firestore
     @State private var rides: [Ride] = []  // Store rides fetched form Firestore
+    @State private var updatedRentals: [Rental] = []  // Store rentals fetched from Firestore
+    @State private var updatedRides: [Ride] = []  // Store rides fetched form Firestore
     @State private var isLoading = true
     @State private var showingFilterView = false
     @State private var showingSortView = false
@@ -27,57 +29,73 @@ struct ActivityView: View {
     @State private var selectedCarType: String = "All"
     @State private var selectedTimeFrame: String = "All"
     @State private var selectedRentalType: String = "All"
+    @State private var isFilterActive: Bool = false
+    @State private var isSortActive: Bool = false
 
     @State private var navigationPath = NavigationPath()
 
-    private var filteredRentals: [Rental] {
+    private var sortedRentals: [Rental] {
         switch selectedSort.title {
-        //                Recent Pickup asc/dec
-        case (title:"Most Recent"):
-            return rentals.sorted { $0.pickupDate < $1.pickupDate }
-        case (title:"Least Recent"):
-            return rentals.sorted { $0.pickupDate > $1.pickupDate }
-        //                Name Alphabetical asc/dec
+        case "Most Recent":
+            return rentals.sorted { $0.pickupDate > $1.pickupDate }  // Descending
+        case "Oldest":
+            return rentals.sorted { $0.pickupDate < $1.pickupDate }  // Ascending
         case "Alphabetical (Ascending)":
-            return rentals.sorted { $0.carModel.carName > $1.carModel.carName }
+            return rentals.sorted {
+                let firstWord1 =
+                    $0.carModel.carName.components(separatedBy: " ").first ?? ""
+                let firstWord2 =
+                    $1.carModel.carName.components(separatedBy: " ").first ?? ""
+                return firstWord1 > firstWord2
+            }
         case "Alphabetical (Descending)":
-            return rentals.sorted { $0.carModel.carName < $1.carModel.carName }
-        //                Price asc/dec
+            return rentals.sorted {
+                let firstWord1 =
+                    $0.carModel.carName.components(separatedBy: " ").first ?? ""
+                let firstWord2 =
+                    $1.carModel.carName.components(separatedBy: " ").first ?? ""
+                return firstWord1 < firstWord2
+            }
         case "Price (Ascending)":
-            return rentals.sorted {
-                $0.totalCost > $1.totalCost
-            }
+            return rentals.sorted { $0.totalCost < $1.totalCost }
         case "Price (Descending)":
-            return rentals.sorted {
-                $0.totalCost < $1.totalCost
-            }
-        default:  // Best Match
-            return rentals
+            return rentals.sorted { $0.totalCost > $1.totalCost }
+        default:
+            return rentals  // No sorting applied
         }
     }
 
-    private var filteredRides: [Ride] {
+    private var sortedRides: [Ride] {
         switch selectedSort.title {
-        //                Recent Pickup asc/dec
-        case (title:"Most Recent"):
-            return rides.sorted { $0.arrivalTime < $1.arrivalTime }
-        case (title:"Least Recent"):
+        case "Most Recent":
             return rides.sorted { $0.arrivalTime > $1.arrivalTime }
-        //                Name Alphabetical asc/dec
+        case "Oldest":
+            return rides.sorted { $0.arrivalTime < $1.arrivalTime }
         case "Alphabetical (Ascending)":
-            return rides.sorted { $0.carModel.carName > $1.carModel.carName }
+            return rides.sorted {
+                let firstWord1 =
+                    $0.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                let firstWord2 =
+                    $1.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                return firstWord1 > firstWord2
+            }
         case "Alphabetical (Descending)":
-            return rides.sorted { $0.carModel.carName < $1.carModel.carName }
-        //                Price asc/dec
+            return rides.sorted {
+                let firstWord1 =
+                    $0.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                let firstWord2 =
+                    $1.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                return firstWord1 < firstWord2
+            }
         case "Price (Ascending)":
-            return rides.sorted {
-                $0.totalCost > $1.totalCost
-            }
+            return rides.sorted { $0.totalCost < $1.totalCost }
         case "Price (Descending)":
-            return rides.sorted {
-                $0.totalCost < $1.totalCost
-            }
-        default:  // Best Match
+            return rides.sorted { $0.totalCost > $1.totalCost }
+        default:
             return rides
         }
     }
@@ -91,7 +109,7 @@ struct ActivityView: View {
         db.collection("user_rentals")
             .whereField("userId", isEqualTo: currentUser.uid)
             .getDocuments { snapshot, error in
-                if let error = error {
+                if error != nil {
                     //                    print("Error fetching rentals: \(error.localizedDescription)")
                 } else if let documents = snapshot?.documents {
                     //                    print("Fetched \(documents.count) rentals for user: \(currentUser.uid)")
@@ -105,7 +123,7 @@ struct ActivityView: View {
                             let rental = try doc.data(as: Rental.self)
                             //                            print("Decoded Rental: \(rental)") // Log each decoded rental
                             return rental
-                        } catch let decodingError {
+                        } catch _ {
                             // Log the full error object and associated info
                             //                            print("Error decoding rental: \(decodingError.localizedDescription)")
                             //                            print("Error details: \(decodingError)")  // This will print more detailed information about the decoding error
@@ -161,7 +179,96 @@ struct ActivityView: View {
     }
 
     func applyFilters() {
+        // Apply filters to rentals
+        updatedRentals = rentals.filter { rental in
+            (selectedRentalType == "All" || selectedRentalType == "Rental")
+                && (selectedCarType == "All"
+                    || rental.carModel.carType == selectedCarType)
+                && (selectedTimeFrame == "All"
+                    || isWithinTimeFrame(rental.pickupDate))
+        }.sorted { first, second in
+            switch selectedSort.title {
+            case "Most Recent":
+                return first.pickupDate > second.pickupDate
+            case "Oldest":
+                return first.pickupDate < second.pickupDate
+            case "Alphabetical (Ascending)":
+                let firstWord1 =
+                    first.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                let firstWord2 =
+                    second.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                return firstWord1 < firstWord2
+            case "Alphabetical (Descending)":
+                let firstWord1 =
+                    first.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                let firstWord2 =
+                    second.carModel.carName.components(separatedBy: " ").first?
+                    .lowercased() ?? ""
+                return firstWord1 > firstWord2
+            case "Price (Ascending)":
+                return first.totalCost < second.totalCost
+            case "Price (Descending)":
+                return first.totalCost > second.totalCost
+            default:
+                return true
+            }
+        }
 
+        // Apply filters and sorting to rides
+        updatedRides = rides.filter { ride in
+            (selectedRentalType == "All" || selectedRentalType == "Ride")
+                && (selectedCarType == "All"
+                    || ride.carModel.carType == selectedCarType)
+                && (selectedTimeFrame == "All"
+                    || isWithinTimeFrame(ride.arrivalTime))
+        }.sorted { first, second in
+            switch selectedSort.title {
+            case "Most Recent":
+                return first.arrivalTime > second.arrivalTime
+            case "Oldest":
+                return first.arrivalTime < second.arrivalTime
+            case "Alphabetical (Ascending)":
+                let firstWord1 =
+                    first.carModel.carName.components(separatedBy: " ").first
+                    ?? ""
+                let firstWord2 =
+                    second.carModel.carName.components(separatedBy: " ").first
+                    ?? ""
+                return firstWord1 < firstWord2
+            case "Alphabetical (Descending)":
+                let firstWord1 =
+                    first.carModel.carName.components(separatedBy: " ").first
+                    ?? ""
+                let firstWord2 =
+                    second.carModel.carName.components(separatedBy: " ").first
+                    ?? ""
+                return firstWord1 > firstWord2
+            case "Price (Ascending)":
+                return first.totalCost < second.totalCost
+            case "Price (Descending)":
+                return first.totalCost > second.totalCost
+            default:
+                return true
+            }
+        }
+
+        func isWithinTimeFrame(_ date: Date) -> Bool {
+            switch selectedTimeFrame {
+            case "Today":
+                return Calendar.current.isDateInToday(date)
+            case "This Week":
+                return Calendar.current.isDate(
+                    date, equalTo: Date(), toGranularity: .weekOfYear)
+            case "This Month":
+                return Calendar.current.isDate(
+                    date, equalTo: Date(), toGranularity: .month)
+            default:
+                return true  // "All" timeframe
+            }
+        }
     }
 
     var body: some View {
@@ -236,21 +343,22 @@ struct ActivityView: View {
 
                         if isLoading {
                             ProgressView()
-                        } else if rentals.isEmpty && rides.isEmpty {
+                        } else if updatedRentals.isEmpty && updatedRides.isEmpty
+                        {
                             Text("No rides or rentals found")
                                 .foregroundColor(.white)
                             Spacer()
                         } else {
 
                             ScrollView {
-                                if !rentals.isEmpty {
+                                if !updatedRentals.isEmpty {
                                     Text("Rentals")
                                         .font(.headline)
                                         .padding(.horizontal)
                                         .foregroundStyle(.white)
                                         .multilineTextAlignment(.leading)
-                                    
-                                    ForEach(rentals) { rental in
+
+                                    ForEach(updatedRentals) { rental in
                                         Button(action: {
                                             // Append the entire rental object to the navigation path
                                             navigationPath.append(rental)
@@ -260,17 +368,17 @@ struct ActivityView: View {
                                         }
                                     }
                                     .onDelete { IndexSet in
-                                        
+
                                     }
-                                
+
                                 }
-                                if !rides.isEmpty {
+                                if !updatedRides.isEmpty {
                                     Text("Rides")
                                         .font(.headline)
                                         .padding(.horizontal)
                                         .foregroundStyle(.white)
                                         .multilineTextAlignment(.leading)
-                                    ForEach(rides) { ride in
+                                    ForEach(updatedRides) { ride in
                                         Button(action: {
                                             // Append the entire ride object to the navigation path
                                             navigationPath.append(ride)
@@ -280,7 +388,7 @@ struct ActivityView: View {
                                         }
                                     }
                                     .onDelete { IndexSet in
-                                        
+
                                     }
                                 }
 
@@ -323,8 +431,25 @@ struct ActivityView: View {
         .onAppear {
             fetchUserRentals()  // Fetch rentals and rides when the view appears
             fetchUserRides()
+            applyFilters()
             isLoading = false
         }
+        .onChange(of: isFilterActive) {
+            //            fetchUserRentals()  // Fetch rentals and rides when the view appears
+            //            fetchUserRides()
+            applyFilters()
+            isFilterActive = false
+        }
+        .onChange(of: rides) {
+            applyFilters()
+        }
+        .onChange(of: rentals) {
+            applyFilters()
+        }
+        .onChange(of: selectedSort) {
+            applyFilters()
+        }
+
         .navigationViewStyle(StackNavigationViewStyle())
         .tabItem {
             Image(systemName: "person.crop.circle.fill")
@@ -334,13 +459,16 @@ struct ActivityView: View {
             ActivityFilterView(
                 selectedCarType: $selectedCarType,
                 selectedTimeFrame: $selectedTimeFrame,
-                selectedRentalType: $selectedRentalType
+                selectedRentalType: $selectedRentalType,
+                isFilterActive: $isFilterActive
             )
             .environment(\.colorScheme, .dark)
         }
         .sheet(isPresented: $showingSortView) {
-            ActivitySortView(selectedSort: $selectedSort)
-                .environment(\.colorScheme, .dark)
+            ActivitySortView(
+                selectedSort: $selectedSort, isSortActive: $isSortActive
+            )
+            .environment(\.colorScheme, .dark)
         }
 
     }

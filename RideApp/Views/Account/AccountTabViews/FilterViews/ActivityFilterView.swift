@@ -12,6 +12,7 @@ struct ActivityFilterView: View {
     @Binding var selectedCarType: String
     @Binding var selectedTimeFrame: String
     @Binding var selectedRentalType: String
+    @Binding var isFilterActive: Bool
 
     let rentalTypes: [String] = ["All", "Rental", "Ride"]
     let carTypes: [String] = ["All", "Sedan", "SUV", "Truck", "Coupe"]
@@ -59,6 +60,7 @@ struct ActivityFilterView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Apply") {
+                        isFilterActive.toggle()
                         dismiss()
                     }
                 }
