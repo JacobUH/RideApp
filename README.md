@@ -22,7 +22,7 @@ Coming Soon!
 - TBA
 
 ### Sage
-- TBA
+- Prototyping/designing, Rides tab, geocoding, database retrival. 
 
 ## Contact
 Feel free to reach out to any of our emails below!
