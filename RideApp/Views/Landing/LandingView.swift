@@ -13,6 +13,8 @@ struct LandingView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     
+    @State private var navigationPath = NavigationPath()
+
     @State private var isLoginSelected = false
     @State private var isSignUpSelected = false
     @State private var showForm = false
@@ -30,8 +32,10 @@ struct LandingView: View {
         let orientation = DeviceHelper(widthSizeClass: widthSizeClass, heightSizeClass: heightSizeClass)
         
         if isLoggedIn {
-            ContentView()
-                .navigationBarBackButtonHidden(true)
+            NavigationView(content: {
+                ContentView()
+                    .navigationBarBackButtonHidden(true)
+            })
         } else {
             NavigationView(content: {
                 ZStack {
