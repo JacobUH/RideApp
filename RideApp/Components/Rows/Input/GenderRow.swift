@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// allow users to select their gender
 struct GenderRow: View {
     
     @Binding var text: String

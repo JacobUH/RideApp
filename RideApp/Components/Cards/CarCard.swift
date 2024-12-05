@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// used to display cars on the rentalView
+
 struct CarCard: View {
     let imageName: String
     let CarName: String

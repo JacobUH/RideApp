@@ -16,12 +16,13 @@ struct RentalsView: View {
     @State private var showingSortView = false
     @State private var selectedSort: SortOption? = SortOption(title: "Best Match")
     
-    // filter states (gonna add more soon)
+    // filter states
     @State private var showingFilterView = false
     @State private var selectedCarType: String = "All"
     @State private var minPrice: String = ""
     @State private var maxPrice: String = ""
 
+    // load cars from the JSON
     func loadCarData() {
         if let jsonData = CarData.jsonString.data(using: .utf8) {
             do {
@@ -32,7 +33,8 @@ struct RentalsView: View {
             }
         }
     }
-
+    
+    // filter for selecting cars
     var filteredCars: [CarDetails] {
         let filteredBySearch = searchText.isEmpty ? sortedCars : sortedCars.filter { $0.carName.localizedCaseInsensitiveContains(searchText) }
         
@@ -47,7 +49,8 @@ struct RentalsView: View {
                    (maxPrice.isEmpty || carCost <= maxPriceValue)
         }
     }
-
+        
+    // sort for the cars
     var sortedCars: [CarDetails] {
         guard let sortOption = selectedSort else {
             return carList
@@ -88,6 +91,18 @@ struct RentalsView: View {
             }
         default: // Best Match
             return carList
+        }
+    }
+    
+    // filter & sort text to show user whats being used
+    private var filteredResultsText: String {
+        let filterApplied = selectedCarType != "All" || !minPrice.isEmpty || !maxPrice.isEmpty
+        let resultText = "\(filteredCars.count) Results"
+        
+        if filterApplied {
+            return resultText + " (Filters Applied) • \(selectedSort?.title ?? "Sort by")"
+        } else {
+            return resultText + " • \(selectedSort?.title ?? "Sort by")"
         }
     }
 
@@ -179,16 +194,6 @@ struct RentalsView: View {
         .sheet(isPresented: $showingSortView) {
             SortView(selectedSort: $selectedSort)
                 .environment(\.colorScheme, .dark)
-        }
-    }
-    private var filteredResultsText: String {
-        let filterApplied = selectedCarType != "All" || !minPrice.isEmpty || !maxPrice.isEmpty
-        let resultText = "\(filteredCars.count) Results"
-        
-        if filterApplied {
-            return resultText + " (Filters Applied) • \(selectedSort?.title ?? "Sort by")"
-        } else {
-            return resultText + " • \(selectedSort?.title ?? "Sort by")"
         }
     }
 }

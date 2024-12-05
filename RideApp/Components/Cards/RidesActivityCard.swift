@@ -8,6 +8,7 @@
 import SwiftUI
 
 // Card for displaying rides on ActivityView
+
 struct RidesActivityCard: View {
     let CarData: Ride
     

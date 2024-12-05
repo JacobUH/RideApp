@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// allows users to update/display parts of their profile based on props
 struct ProfileRow: View {
     var label: String
     @Binding var text: String

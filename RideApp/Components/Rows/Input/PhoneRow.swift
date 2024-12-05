@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// formats phone number in correct format
 func formatAndLimitPhoneNumber(_ number: String) -> String {
     let digits = number.filter { $0.isNumber }
     let maxDigits = 10
@@ -28,7 +29,7 @@ func formatAndLimitPhoneNumber(_ number: String) -> String {
     }
 }
 
-
+// allows users to update/display phone number 
 struct PhoneRow: View {
     @Binding var text: String
 

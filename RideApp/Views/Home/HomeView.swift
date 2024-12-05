@@ -24,6 +24,7 @@ struct HomeView: View {
         case nearby(CarDetails)
     }
     
+    // get cars from JSON
     func loadCarData() {
         if let jsonData = CarData.jsonString.data(using: .utf8) {
             do {
@@ -35,12 +36,14 @@ struct HomeView: View {
         }
     }
     
+    // to grab popular cars from CarData (chosen)
     func filterPopularCars() {
         filteredPopularCars = carList.filter { car in
             car.carName == "Herrera Riptide - Terrier" || car.carName == "Archer Quartz - Bandit" || car.carName == "Chevillion Thrax - Jefferson"
         }
     }
     
+    // to grab "nearby" cars from CarData (chosen)
     func filterNearbyCars() {
         filteredNearbyCars = carList.filter { car in
             car.carName == "Cortes V5000 Valor" || car.carName == "Archer Quartz EC-L" || car.carName == "Quadra Sport R-7"

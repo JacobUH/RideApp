@@ -16,6 +16,7 @@ struct SortView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedSort: SortOption?
     
+    // all of the sort options
     let sortOptions: [SortOption] = [
         SortOption(title: "Best Match"),
         SortOption(title: "Alphabetical (Ascending)"),

@@ -12,7 +12,8 @@ struct FilterView: View {
     @Binding var selectedCarType: String
     @Binding var minPrice: String
     @Binding var maxPrice: String
-
+    
+    // types of cars
     let carTypes = ["All", "Sedan", "SUV", "Truck", "Coupe"]
 
     var body: some View {

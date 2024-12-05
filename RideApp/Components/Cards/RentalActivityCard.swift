@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+
 // Card for displaying rentals on ActivityView
+
 struct RentalActivityCard: View {
     let CarData: Rental
     

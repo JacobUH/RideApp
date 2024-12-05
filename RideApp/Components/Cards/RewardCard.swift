@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// to show rewards on the rewardView in the accountView
+
 struct RewardCard: View {
     let imageName: String
     let title: String
